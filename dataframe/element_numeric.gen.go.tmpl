@@ -1,0 +1,133 @@
+package dataframe
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow"
+	"github.com/go-bullseye/bullseye"
+)
+
+{{range .In}}
+// {{.Name}}Element has logic to apply to this type.
+type {{.Name}}Element struct {
+	v interface{}
+}
+
+// New{{.Name}}Element creates a new {{.Name}}Element logic wrapper
+// from the given value provided as v.
+func New{{.Name}}Element(v interface{}) *{{.Name}}Element {
+	return &{{.Name}}Element{
+		v: v,
+	}
+}
+
+// compare takes the left and right elements and applies the comparator function to them.
+func (e {{.Name}}Element) compare(r Element, f func(left, right {{or .QualifiedType .Type}}) bool) (bool, error) {
+	rE, ok := r.(*{{.Name}}Element)
+	if !ok {
+		return false, fmt.Errorf("cannot cast %v to {{.Name}}Element", r)
+	}
+
+	// When their nil status isn't the same, we can't compare them.
+	// Explicit both nil should be handled elsewhere.
+	if e.IsNil() != rE.IsNil() {
+		return false, nil
+	}
+
+	lv, lok := e.v.({{or .QualifiedType .Type}})
+	if !lok {
+		return false, fmt.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", e.v)
+	}
+	rv, rok := rE.v.({{or .QualifiedType .Type}})
+	if !rok {
+		return false, fmt.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", rE.v)
+	}
+
+	return f(lv, rv), nil
+}
+
+// Comparation methods
+
+// Eq returns true if the left {{.Name}}Element is equal to the right {{.Name}}Element.
+// When both are nil Eq returns false because nil actualy signifies "unknown"
+// and you can't compare two things when you don't know what they are.
+func (e {{.Name}}Element) Eq(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return false, nil
+	}
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left == right
+	})
+}
+
+// EqStrict returns true if the left {{.Name}}Element is equal to the right {{.Name}}Element.
+// When both are nil EqStrict returns true.
+func (e {{.Name}}Element) EqStrict(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return true, nil
+	}
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left == right
+	})
+}
+
+// Neq returns true if the left {{.Name}}Element
+// is not equal to the right {{.Name}}Element.
+func (e {{.Name}}Element) Neq(r Element) (bool, error) {
+	v, ok := e.Eq(r)
+	return !v, ok
+}
+
+// Less returns true if the left {{.Name}}Element
+// is less than the right {{.Name}}Element.
+func (e {{.Name}}Element) Less(r Element) (bool, error) {
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left < right
+	})
+}
+
+// LessEq returns true if the left {{.Name}}Element
+// is less than or equal to the right {{.Name}}Element.
+func (e {{.Name}}Element) LessEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left <= right
+	})
+}
+
+// Greater returns true if the left {{.Name}}Element
+// is greter than the right {{.Name}}Element.
+func (e {{.Name}}Element) Greater(r Element) (bool, error) {
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left > right
+	})
+}
+
+// GreaterEq returns true if the left {{.Name}}Element
+// is greter than or equal to the right {{.Name}}Element.
+func (e {{.Name}}Element) GreaterEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
+		return left >= right
+	})
+}
+
+// Accessor/conversion methods
+
+// Copy returns a copy of this {{.Name}}Element.
+func (e {{.Name}}Element) Copy() Element {
+	return e
+}
+
+// String prints the value of this element as a string.
+func (e {{.Name}}Element) String() string {
+	return fmt.Sprintf("%v", e.v)
+}
+
+// Information methods
+
+// IsNil returns true when the underlying value is nil.
+func (e {{.Name}}Element) IsNil() bool {
+	return e.v == nil
+}
+
+
+{{end}}
