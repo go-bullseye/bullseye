@@ -95,8 +95,8 @@ From the [arrow/go README](https://github.com/apache/arrow/blob/master/go/README
   it as the receiver is assumed to own the object and will later call `Release`
   when it no longer needs the object.
 
-_Note: You can write a test using `memory.NewCheckedAllocator` to assert that you have
-released all resources properly. See [tests](dataframe/dataframe_test.go#L234)_
+_Note:_ You can write a test using `memory.NewCheckedAllocator` to assert that you have
+released all resources properly. See: [tests](dataframe/dataframe_test.go#L234)
 
 ## TODO
 
