@@ -8,7 +8,7 @@ import (
 )
 
 // This example demonstrates creating a new DataFrame from memory
-// using a Dict.
+// using a Dict and displaying the contents of it.
 func Example_newDataFrameFromMemory() {
 	pool := memory.NewGoAllocator()
 	df, _ := dataframe.NewDataFrameFromMem(pool, dataframe.Dict{
