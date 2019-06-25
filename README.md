@@ -87,7 +87,8 @@ From the [arrow/go README](https://github.com/apache/arrow/blob/master/go/README
   access the object outside the scope of the current function call.
 
 - You own any object you create via functions whose name begins with `New` or
-  `Copy` or when receiving an object over a channel. Therefore you must call
+  `Copy` or **any operation that results in a new immutable DataFrame being returned**
+  or when receiving an object over a channel. Therefore you must call
   `Release` once you no longer need the object.
 
 - If you send an object over a channel, you must call `Retain` before sending
