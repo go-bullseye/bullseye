@@ -530,10 +530,9 @@ func compareColumns(left, right *array.Column) bool {
 }
 
 func buildSchema(cols []array.Column) *arrow.Schema {
-	fields := make([]arrow.Field, len(cols))
-	for i, col := range cols {
-		fields[i].Name = col.Name()
-		fields[i].Type = col.DataType()
+	fields := make([]arrow.Field, 0, len(cols))
+	for i := range cols {
+		fields = append(fields, cols[i].Field())
 	}
 	return arrow.NewSchema(fields, nil)
 }
