@@ -148,6 +148,16 @@ func NewDataFrameFromShape(mem memory.Allocator, cols []array.Column, rows int64
 	return df, nil
 }
 
+func NewDataFrameFromTable(mem memory.Allocator, table array.Table) (*DataFrame, error) {
+	cols := make([]array.Column, table.NumCols())
+	for i := range cols {
+		col := table.Column(i)
+		cols[i] = *col
+	}
+
+	return NewDataFrameFromShape(mem, cols, table.NumRows())
+}
+
 // DataFrame is an immutable DataFrame that uses Arrow
 // to store it's data in a standard columnar format.
 type DataFrame struct {

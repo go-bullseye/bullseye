@@ -1257,3 +1257,34 @@ rec[0]["col2-f64-x2"]: [2 4 6 8 10 12 14 16 18 20]
 		t.Fatalf("references are the same. df is not a copy of df2 (%v) == (%v)", &df, &df2)
 	}
 }
+
+func TestNewDataFrameFromTable(t *testing.T) {
+	pool := memory.NewCheckedAllocator(memory.NewGoAllocator())
+	defer pool.AssertSize(t, 0)
+
+	records, schema := buildRecords(pool, t, 48)
+	for i := range records {
+		defer records[i].Release()
+	}
+
+	table := array.NewTableFromRecords(schema, records)
+	defer table.Release()
+
+	df, err := NewDataFrameFromTable(pool, table)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer df.Release()
+
+	got := df.Display(-1)
+	want := `rec[0]["f1-i32"]: [1 2 3 4 5 6 7 8 (null) 10]
+rec[0]["f2-f64"]: [1 2 3 4 5 6 7 8 (null) 10]
+rec[1]["f1-i32"]: [11 12 13 14 15 16 17 18 19 20]
+rec[1]["f2-f64"]: [11 12 13 14 15 16 17 18 19 20]
+rec[2]["f1-i32"]: [31 32 33 34 35 36 37 38 39 48]
+rec[2]["f2-f64"]: [31 32 33 34 35 36 37 38 39 40]
+`
+	if got != want {
+		t.Fatalf("\ngot=\n%v\nwant=\n%v", got, want)
+	}
+}
