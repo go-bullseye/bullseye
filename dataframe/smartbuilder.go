@@ -3,9 +3,11 @@ package dataframe
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
+	"github.com/pkg/errors"
 )
 
 // AppenderFunc is the function to be used to convert the data to the correct type.
@@ -167,8 +169,143 @@ func initFieldAppender(field *arrow.Field) AppenderFunc {
 				builder.Append(vT)
 			}
 		}
+	case *arrow.Date32Type:
+		return func(field array.Builder, v interface{}) {
+			builder := field.(*array.Date32Builder)
+			if v == nil {
+				builder.AppendNull()
+			} else {
+				vT := arrow.Date32(v.(int32))
+				builder.Append(vT)
+			}
+		}
+
+	case *arrow.ListType:
+		return func(b array.Builder, v interface{}) {
+			builder := b.(*array.ListBuilder)
+			if v == nil {
+				builder.AppendNull()
+			} else {
+				sub := builder.ValueBuilder()
+				fmt.Printf("list type value: [%v]\n", v)
+				v := reflectValueOfNonPointer(v).Elem()
+				sub.Reserve(v.Len())
+				builder.Append(true)
+				for i := 0; i < v.Len(); i++ {
+					appendValue(sub, v.Index(i).Interface())
+				}
+			}
+		}
+
+	case *arrow.FixedSizeListType:
+		return func(b array.Builder, v interface{}) {
+			builder := b.(*array.FixedSizeListBuilder)
+			if v == nil {
+				builder.AppendNull()
+			} else {
+				sub := builder.ValueBuilder()
+				v := reflect.ValueOf(v).Elem()
+				sub.Reserve(v.Len())
+				builder.Append(true)
+				for i := 0; i < v.Len(); i++ {
+					appendValue(sub, v.Index(i).Interface())
+				}
+			}
+		}
+
+	case *arrow.StructType:
+		return func(b array.Builder, v interface{}) {
+			builder := b.(*array.StructBuilder)
+			if v == nil {
+				builder.AppendNull()
+			} else {
+				builder.Append(true)
+				v := reflect.ValueOf(v).Elem()
+				for i := 0; i < builder.NumField(); i++ {
+					f := builder.FieldBuilder(i)
+					appendValue(f, v.Field(i).Interface())
+				}
+			}
+		}
 
 	default:
 		panic(fmt.Errorf("dataframe/smartbuilder: unhandled field type %T", field.Type))
 	}
+}
+
+// TODO: Write test that will test all the data types.
+// TODO: Can values in the nested structure ever be nil?
+func appendValue(bldr array.Builder, v interface{}) {
+	fmt.Printf("appendValue: [%v]\n", v)
+	switch b := bldr.(type) {
+	case *array.BooleanBuilder:
+		b.Append(v.(bool))
+	case *array.Int8Builder:
+		b.Append(v.(int8))
+	case *array.Int16Builder:
+		b.Append(v.(int16))
+	case *array.Int32Builder:
+		b.Append(v.(int32))
+	case *array.Int64Builder:
+		b.Append(v.(int64))
+	case *array.Uint8Builder:
+		b.Append(v.(uint8))
+	case *array.Uint16Builder:
+		b.Append(v.(uint16))
+	case *array.Uint32Builder:
+		b.Append(v.(uint32))
+	case *array.Uint64Builder:
+		b.Append(v.(uint64))
+	case *array.Float32Builder:
+		b.Append(v.(float32))
+	case *array.Float64Builder:
+		b.Append(v.(float64))
+	case *array.StringBuilder:
+		b.Append(v.(string))
+	case *array.Date32Builder:
+		b.Append(arrow.Date32(v.(int32)))
+
+	case *array.ListBuilder:
+		b.Append(true)
+		sub := b.ValueBuilder()
+		v := reflect.ValueOf(v)
+		for i := 0; i < v.Len(); i++ {
+			appendValue(sub, v.Index(i).Interface())
+		}
+
+	case *array.FixedSizeListBuilder:
+		b.Append(true)
+		sub := b.ValueBuilder()
+		v := reflect.ValueOf(v)
+		for i := 0; i < v.Len(); i++ {
+			appendValue(sub, v.Index(i).Interface())
+		}
+
+	case *array.StructBuilder:
+		v := reflect.ValueOf(v)
+		for i := 0; i < b.NumField(); i++ {
+			f := b.FieldBuilder(i)
+			appendValue(f, v.Field(i).Interface())
+		}
+
+	default:
+		panic(errors.Errorf("dataframe/smartbuilder: unhandled Arrow builder type %T", b))
+	}
+}
+
+func reflectValueOfNonPointer(v interface{}) reflect.Value {
+	var ptr reflect.Value
+	value := reflect.ValueOf(v)
+	if value.Type().Kind() == reflect.Ptr {
+		ptr = value
+		// value = ptr.Elem() // acquire value referenced by pointer
+	} else {
+		ptr = reflect.New(reflect.TypeOf(v)) // create new pointer
+		temp := ptr.Elem()                   // create variable to value of pointer
+		temp.Set(value)                      // set value of variable to our passed in value
+	}
+
+	fmt.Printf("[%v] has type of: %s\n", v, reflect.TypeOf(v).String())
+
+	return ptr
 }

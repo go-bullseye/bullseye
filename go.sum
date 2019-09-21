@@ -1,5 +1,7 @@
 github.com/apache/arrow/go/arrow v0.0.0-20190615061817-720be32a0bb5 h1:EGCJTEx+tkmZuz6Wbc0zkA+Dgf7UXKu+126krteiZJQ=
 github.com/apache/arrow/go/arrow v0.0.0-20190615061817-720be32a0bb5/go.mod h1:NG5SvIQXIxzJR5lGmoXTX9R/EmkArKbPPFu0DUFSz10=
+github.com/apache/arrow/go/arrow v0.0.0-20190920001900-00a3c47b1559 h1:yDIslDay6d9wnZzbLCVY72N8y4iPBHwSV4FQmllGf2E=
+github.com/apache/arrow/go/arrow v0.0.0-20190920001900-00a3c47b1559/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/flatbuffers v1.11.0/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
