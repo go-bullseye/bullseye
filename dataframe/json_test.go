@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	toJSONResult = `{"col1-i32":1,"col2-f64":1,"col3-f16":1,"col4-date32":1,"col5-date64":1,"col6-mitvl":1}
-{"col1-i32":2,"col2-f64":2,"col3-f16":2,"col4-date32":2,"col5-date64":2,"col6-mitvl":2}
-{"col1-i32":3,"col2-f64":3,"col3-f16":3,"col4-date32":3,"col5-date64":3,"col6-mitvl":3}
-{"col1-i32":4,"col2-f64":4,"col3-f16":4,"col4-date32":4,"col5-date64":4,"col6-mitvl":4}
-{"col1-i32":5,"col2-f64":5,"col3-f16":5,"col4-date32":5,"col5-date64":5,"col6-mitvl":5}
-{"col1-i32":6,"col2-f64":6,"col3-f16":6,"col4-date32":6,"col5-date64":6,"col6-mitvl":6}
-{"col1-i32":7,"col2-f64":7,"col3-f16":7,"col4-date32":7,"col5-date64":7,"col6-mitvl":7}
-{"col1-i32":8,"col2-f64":8,"col3-f16":8,"col4-date32":8,"col5-date64":8,"col6-mitvl":8}
-{"col1-i32":null,"col2-f64":null,"col3-f16":null,"col4-date32":null,"col5-date64":null,"col6-mitvl":null}
-{"col1-i32":10,"col2-f64":10,"col3-f16":10,"col4-date32":10,"col5-date64":10,"col6-mitvl":10}
+	toJSONResult = `{"col1-i32":1,"col2-f64":1,"col3-f16":1,"col4-date32":1,"col5-date64":1,"col6-mitvl":1,"col7-dtitvl":{"days":1,"milliseconds":1}}
+{"col1-i32":2,"col2-f64":2,"col3-f16":2,"col4-date32":2,"col5-date64":2,"col6-mitvl":2,"col7-dtitvl":{"days":2,"milliseconds":2}}
+{"col1-i32":3,"col2-f64":3,"col3-f16":3,"col4-date32":3,"col5-date64":3,"col6-mitvl":3,"col7-dtitvl":{"days":3,"milliseconds":3}}
+{"col1-i32":4,"col2-f64":4,"col3-f16":4,"col4-date32":4,"col5-date64":4,"col6-mitvl":4,"col7-dtitvl":{"days":4,"milliseconds":4}}
+{"col1-i32":5,"col2-f64":5,"col3-f16":5,"col4-date32":5,"col5-date64":5,"col6-mitvl":5,"col7-dtitvl":{"days":5,"milliseconds":5}}
+{"col1-i32":6,"col2-f64":6,"col3-f16":6,"col4-date32":6,"col5-date64":6,"col6-mitvl":6,"col7-dtitvl":{"days":6,"milliseconds":6}}
+{"col1-i32":7,"col2-f64":7,"col3-f16":7,"col4-date32":7,"col5-date64":7,"col6-mitvl":7,"col7-dtitvl":{"days":7,"milliseconds":7}}
+{"col1-i32":8,"col2-f64":8,"col3-f16":8,"col4-date32":8,"col5-date64":8,"col6-mitvl":8,"col7-dtitvl":{"days":8,"milliseconds":8}}
+{"col1-i32":null,"col2-f64":null,"col3-f16":null,"col4-date32":null,"col5-date64":null,"col6-mitvl":null,"col7-dtitvl":null}
+{"col1-i32":10,"col2-f64":10,"col3-f16":10,"col4-date32":10,"col5-date64":10,"col6-mitvl":10,"col7-dtitvl":{"days":10,"milliseconds":10}}
 `
 )
 
