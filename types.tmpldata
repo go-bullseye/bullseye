@@ -99,6 +99,7 @@
     "Size": "16",
     "ValuesMethod": "Values",
     "Compare": {
+      "comment": "From: https://github.com/apache/arrow/blob/438a140142be423b1b2af2399567a0a8aeba9aa1/cpp/src/arrow/util/basic_decimal.cc#L546",
       "Eq": "left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()",
       "Less": "left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits())",
       "LessEq": "!(right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits()))",
