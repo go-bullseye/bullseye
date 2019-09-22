@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/decimal128"
 	"github.com/apache/arrow/go/arrow/float16"
 	"github.com/pkg/errors"
 )
@@ -1338,6 +1339,127 @@ func (e Float16Element) String() string {
 
 // IsNil returns true when the underlying value is nil.
 func (e Float16Element) IsNil() bool {
+	return e.v == nil
+}
+
+// Decimal128Element has logic to apply to this type.
+type Decimal128Element struct {
+	v interface{}
+}
+
+// NewDecimal128Element creates a new Decimal128Element logic wrapper
+// from the given value provided as v.
+func NewDecimal128Element(v interface{}) *Decimal128Element {
+	return &Decimal128Element{
+		v: v,
+	}
+}
+
+// compare takes the left and right elements and applies the comparator function to them.
+func (e Decimal128Element) compare(r Element, f func(left, right decimal128.Num) bool) (bool, error) {
+	rE, ok := r.(*Decimal128Element)
+	if !ok {
+		return false, errors.Errorf("cannot cast %v to Decimal128Element", r)
+	}
+
+	// When their nil status isn't the same, we can't compare them.
+	// Explicit both nil should be handled elsewhere.
+	if e.IsNil() != rE.IsNil() {
+		return false, nil
+	}
+
+	lv, lok := e.v.(decimal128.Num)
+	if !lok {
+		return false, errors.Errorf("cannot assert %v is a decimal128.Num", e.v)
+	}
+	rv, rok := rE.v.(decimal128.Num)
+	if !rok {
+		return false, errors.Errorf("cannot assert %v is a decimal128.Num", rE.v)
+	}
+
+	return f(lv, rv), nil
+}
+
+// Comparation methods
+
+// Eq returns true if the left Decimal128Element is equal to the right Decimal128Element.
+// When both are nil Eq returns false because nil actualy signifies "unknown"
+// and you can't compare two things when you don't know what they are.
+func (e Decimal128Element) Eq(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return false, nil
+	}
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()
+	})
+}
+
+// EqStrict returns true if the left Decimal128Element is equal to the right Decimal128Element.
+// When both are nil EqStrict returns true.
+func (e Decimal128Element) EqStrict(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return true, nil
+	}
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()
+	})
+}
+
+// Neq returns true if the left Decimal128Element
+// is not equal to the right Decimal128Element.
+func (e Decimal128Element) Neq(r Element) (bool, error) {
+	v, ok := e.Eq(r)
+	return !v, ok
+}
+
+// Less returns true if the left Decimal128Element
+// is less than the right Decimal128Element.
+func (e Decimal128Element) Less(r Element) (bool, error) {
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits())
+	})
+}
+
+// LessEq returns true if the left Decimal128Element
+// is less than or equal to the right Decimal128Element.
+func (e Decimal128Element) LessEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return !(right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits()))
+	})
+}
+
+// Greater returns true if the left Decimal128Element
+// is greter than the right Decimal128Element.
+func (e Decimal128Element) Greater(r Element) (bool, error) {
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits())
+	})
+}
+
+// GreaterEq returns true if the left Decimal128Element
+// is greter than or equal to the right Decimal128Element.
+func (e Decimal128Element) GreaterEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right decimal128.Num) bool {
+		return !(left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits()))
+	})
+}
+
+// Accessor/conversion methods
+
+// Copy returns a copy of this Decimal128Element.
+func (e Decimal128Element) Copy() Element {
+	return e
+}
+
+// String prints the value of this element as a string.
+func (e Decimal128Element) String() string {
+	return fmt.Sprintf("%v", e.v)
+}
+
+// Information methods
+
+// IsNil returns true when the underlying value is nil.
+func (e Decimal128Element) IsNil() bool {
 	return e.v == nil
 }
 

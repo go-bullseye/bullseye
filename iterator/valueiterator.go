@@ -60,6 +60,8 @@ func NewValueIterator(column *array.Column) ValueIterator {
 		return NewMonthIntervalValueIterator(column)
 	case *arrow.DayTimeIntervalType:
 		return NewDayTimeIntervalValueIterator(column)
+	case *arrow.Decimal128Type:
+		return NewDecimal128ValueIterator(column)
 
 	default:
 		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))

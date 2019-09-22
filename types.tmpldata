@@ -80,12 +80,30 @@
     "InternalType": "float32",
     "Default": "0",
     "Size": "2",
+    "ValuesMethod": "Values",
     "Compare": {
       "Eq": "left.Uint16() == right.Uint16()",
       "Less": "left.Uint16() < right.Uint16()",
       "LessEq": "left.Uint16() <= right.Uint16()",
       "Greater": "left.Uint16() > right.Uint16()",
       "GreaterEq": "left.Uint16() >= right.Uint16()"
+    }
+  },
+    {
+    "Name": "Decimal128",
+    "name": "decimal128",
+    "Type": "Decimal128Type",
+    "QualifiedType": "decimal128.Num",
+    "InternalType": "decimal128.Num",
+    "Default": "0",
+    "Size": "16",
+    "ValuesMethod": "Values",
+    "Compare": {
+      "Eq": "left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()",
+      "Less": "left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits())",
+      "LessEq": "!(right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits()))",
+      "Greater": "right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits())",
+      "GreaterEq": "!(left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits()))"
     }
   },
   {

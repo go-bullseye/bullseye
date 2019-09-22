@@ -66,11 +66,7 @@ func (cr *{{.Name}}ChunkIterator) Chunk() *array.{{.Name}} { return cr.currentCh
 // ChunkValues returns the underlying []{{or .QualifiedType .Type}} chunk values.
 // Keep in mind the []{{or .QualifiedType .Type}} type might not be able
 // to account for nil values. You must check for those explicitly via the chunk.
-{{- if eq .Type "Float16"}}
-func (cr *{{.Name}}ChunkIterator) ChunkValues() []{{or .QualifiedType .Type}} { return cr.Chunk().Values() }
-{{- else}}
-func (cr *{{.Name}}ChunkIterator) ChunkValues() []{{or .QualifiedType .Type}} { return cr.Chunk().{{.Name}}Values() }
-{{end}}
+func (cr *{{.Name}}ChunkIterator) ChunkValues() []{{or .QualifiedType .Type}} {return cr.Chunk().{{- if .ValuesMethod -}}{{.ValuesMethod}}{{- else -}}{{.Name}}Values{{- end -}}()}
 
 // Next moves the iterator to the next chunk. This will return false
 // when there are no more chunks.
