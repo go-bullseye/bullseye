@@ -73,41 +73,6 @@
     "Size": "1"
   },
   {
-    "Name": "Float16",
-    "name": "float16",
-    "Type": "Float16",
-    "QualifiedType": "float16.Num",
-    "InternalType": "float32",
-    "Default": "0",
-    "Size": "2",
-    "ValuesMethod": "Values",
-    "Compare": {
-      "Eq": "left.Uint16() == right.Uint16()",
-      "Less": "left.Uint16() < right.Uint16()",
-      "LessEq": "left.Uint16() <= right.Uint16()",
-      "Greater": "left.Uint16() > right.Uint16()",
-      "GreaterEq": "left.Uint16() >= right.Uint16()"
-    }
-  },
-    {
-    "Name": "Decimal128",
-    "name": "decimal128",
-    "Type": "Decimal128Type",
-    "QualifiedType": "decimal128.Num",
-    "InternalType": "decimal128.Num",
-    "Default": "0",
-    "Size": "16",
-    "ValuesMethod": "Values",
-    "Compare": {
-      "comment": "From: https://github.com/apache/arrow/blob/438a140142be423b1b2af2399567a0a8aeba9aa1/cpp/src/arrow/util/basic_decimal.cc#L546",
-      "Eq": "left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()",
-      "Less": "left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits())",
-      "LessEq": "!(right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits()))",
-      "Greater": "right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits())",
-      "GreaterEq": "!(left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits()))"
-    }
-  },
-  {
     "Name": "Timestamp",
     "name": "timestamp",
     "Type": "Timestamp",
@@ -162,6 +127,18 @@
     "Size": "8"
   },
   {
+    "Name": "Duration",
+    "name": "duration",
+    "Type": "Duration",
+    "QualifiedType": "arrow.Duration",
+    "InternalType": "int64",
+    "Default": "0",
+    "Size": "8",
+    "Opt": {
+      "Parametric": true
+    }
+  },
+  {
     "Name": "MonthInterval",
     "name": "monthInterval",
     "Type": "MonthInterval",
@@ -169,6 +146,41 @@
     "InternalType": "int32",
     "Default": "0",
     "Size": "4"
+  },
+  {
+    "Name": "Float16",
+    "name": "float16",
+    "Type": "Float16",
+    "QualifiedType": "float16.Num",
+    "InternalType": "float32",
+    "Default": "0",
+    "Size": "2",
+    "ValuesMethod": "Values",
+    "Compare": {
+      "Eq": "left.Uint16() == right.Uint16()",
+      "Less": "left.Uint16() < right.Uint16()",
+      "LessEq": "left.Uint16() <= right.Uint16()",
+      "Greater": "left.Uint16() > right.Uint16()",
+      "GreaterEq": "left.Uint16() >= right.Uint16()"
+    }
+  },
+  {
+    "Name": "Decimal128",
+    "name": "decimal128",
+    "Type": "Decimal128Type",
+    "QualifiedType": "decimal128.Num",
+    "InternalType": "decimal128.Num",
+    "Default": "0",
+    "Size": "16",
+    "ValuesMethod": "Values",
+    "Compare": {
+      "comment": "From: https://github.com/apache/arrow/blob/438a140142be423b1b2af2399567a0a8aeba9aa1/cpp/src/arrow/util/basic_decimal.cc#L546",
+      "Eq": "left.HighBits() == right.HighBits() && left.LowBits() == right.LowBits()",
+      "Less": "left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits())",
+      "LessEq": "!(right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits()))",
+      "Greater": "right.HighBits() < left.HighBits() || (right.HighBits() == left.HighBits() && right.LowBits() < left.LowBits())",
+      "GreaterEq": "!(left.HighBits() < right.HighBits() || (left.HighBits() == right.HighBits() && left.LowBits() < right.LowBits()))"
+    }
   },
   {
     "Name": "DayTimeInterval",

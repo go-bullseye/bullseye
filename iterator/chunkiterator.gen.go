@@ -1022,208 +1022,6 @@ func (cr *Uint8ChunkIterator) Release() {
 	}
 }
 
-// Float16ChunkIterator is an iterator for reading an Arrow Column value by value.
-type Float16ChunkIterator struct {
-	refCount int64
-	col      *array.Column
-
-	// Things Chunked maintains. We're going to maintain it ourselves.
-	chunks []*array.Float16 // cache the chunks on this iterator
-	length int64            // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
-	nulls  int64
-	dtype  arrow.DataType
-
-	// Things we need to maintain for the iterator
-	currentIndex int            // current chunk
-	currentChunk *array.Float16 // current chunk
-}
-
-// NewFloat16ChunkIterator creates a new Float16ChunkIterator for reading an Arrow Column.
-func NewFloat16ChunkIterator(col *array.Column) *Float16ChunkIterator {
-	col.Retain()
-
-	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
-	columnChunks := col.Data().Chunks()
-	chunks := make([]*array.Float16, len(columnChunks))
-	var length int64
-	var nulls int64
-
-	for i, chunk := range columnChunks {
-		// Keep our own refs to chunks
-		chunks[i] = chunk.(*array.Float16)
-		// Retain the chunk
-		chunks[i].Retain()
-
-		// Keep our own counters instead of Chunked's
-		length += int64(chunk.Len())
-		nulls += int64(chunk.NullN())
-	}
-
-	return &Float16ChunkIterator{
-		refCount: 1,
-		col:      col,
-
-		chunks: chunks,
-		length: length,
-		nulls:  nulls,
-		dtype:  col.DataType(),
-
-		currentIndex: 0,
-		currentChunk: nil,
-	}
-}
-
-// Chunk will return the current chunk that the iterator is on.
-func (cr *Float16ChunkIterator) Chunk() *array.Float16 { return cr.currentChunk }
-
-// ChunkValues returns the underlying []float16.Num chunk values.
-// Keep in mind the []float16.Num type might not be able
-// to account for nil values. You must check for those explicitly via the chunk.
-func (cr *Float16ChunkIterator) ChunkValues() []float16.Num { return cr.Chunk().Values() }
-
-// Next moves the iterator to the next chunk. This will return false
-// when there are no more chunks.
-func (cr *Float16ChunkIterator) Next() bool {
-	if cr.currentIndex >= len(cr.chunks) {
-		return false
-	}
-
-	if cr.currentChunk != nil {
-		cr.currentChunk.Release()
-	}
-
-	cr.currentChunk = cr.chunks[cr.currentIndex]
-	cr.currentChunk.Retain()
-	cr.currentIndex++
-
-	return true
-}
-
-// Retain keeps a reference to the Float16ChunkIterator
-func (cr *Float16ChunkIterator) Retain() {
-	atomic.AddInt64(&cr.refCount, 1)
-}
-
-// Release removes a reference to the Float16ChunkIterator
-func (cr *Float16ChunkIterator) Release() {
-	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
-	ref := atomic.AddInt64(&cr.refCount, -1)
-	if ref == 0 {
-		cr.col.Release()
-		for i := range cr.chunks {
-			cr.chunks[i].Release()
-		}
-		if cr.currentChunk != nil {
-			cr.currentChunk.Release()
-			cr.currentChunk = nil
-		}
-		cr.col = nil
-		cr.chunks = nil
-		cr.dtype = nil
-	}
-}
-
-// Decimal128ChunkIterator is an iterator for reading an Arrow Column value by value.
-type Decimal128ChunkIterator struct {
-	refCount int64
-	col      *array.Column
-
-	// Things Chunked maintains. We're going to maintain it ourselves.
-	chunks []*array.Decimal128 // cache the chunks on this iterator
-	length int64               // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
-	nulls  int64
-	dtype  arrow.DataType
-
-	// Things we need to maintain for the iterator
-	currentIndex int               // current chunk
-	currentChunk *array.Decimal128 // current chunk
-}
-
-// NewDecimal128ChunkIterator creates a new Decimal128ChunkIterator for reading an Arrow Column.
-func NewDecimal128ChunkIterator(col *array.Column) *Decimal128ChunkIterator {
-	col.Retain()
-
-	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
-	columnChunks := col.Data().Chunks()
-	chunks := make([]*array.Decimal128, len(columnChunks))
-	var length int64
-	var nulls int64
-
-	for i, chunk := range columnChunks {
-		// Keep our own refs to chunks
-		chunks[i] = chunk.(*array.Decimal128)
-		// Retain the chunk
-		chunks[i].Retain()
-
-		// Keep our own counters instead of Chunked's
-		length += int64(chunk.Len())
-		nulls += int64(chunk.NullN())
-	}
-
-	return &Decimal128ChunkIterator{
-		refCount: 1,
-		col:      col,
-
-		chunks: chunks,
-		length: length,
-		nulls:  nulls,
-		dtype:  col.DataType(),
-
-		currentIndex: 0,
-		currentChunk: nil,
-	}
-}
-
-// Chunk will return the current chunk that the iterator is on.
-func (cr *Decimal128ChunkIterator) Chunk() *array.Decimal128 { return cr.currentChunk }
-
-// ChunkValues returns the underlying []decimal128.Num chunk values.
-// Keep in mind the []decimal128.Num type might not be able
-// to account for nil values. You must check for those explicitly via the chunk.
-func (cr *Decimal128ChunkIterator) ChunkValues() []decimal128.Num { return cr.Chunk().Values() }
-
-// Next moves the iterator to the next chunk. This will return false
-// when there are no more chunks.
-func (cr *Decimal128ChunkIterator) Next() bool {
-	if cr.currentIndex >= len(cr.chunks) {
-		return false
-	}
-
-	if cr.currentChunk != nil {
-		cr.currentChunk.Release()
-	}
-
-	cr.currentChunk = cr.chunks[cr.currentIndex]
-	cr.currentChunk.Retain()
-	cr.currentIndex++
-
-	return true
-}
-
-// Retain keeps a reference to the Decimal128ChunkIterator
-func (cr *Decimal128ChunkIterator) Retain() {
-	atomic.AddInt64(&cr.refCount, 1)
-}
-
-// Release removes a reference to the Decimal128ChunkIterator
-func (cr *Decimal128ChunkIterator) Release() {
-	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
-	ref := atomic.AddInt64(&cr.refCount, -1)
-	if ref == 0 {
-		cr.col.Release()
-		for i := range cr.chunks {
-			cr.chunks[i].Release()
-		}
-		if cr.currentChunk != nil {
-			cr.currentChunk.Release()
-			cr.currentChunk = nil
-		}
-		cr.col = nil
-		cr.chunks = nil
-		cr.dtype = nil
-	}
-}
-
 // TimestampChunkIterator is an iterator for reading an Arrow Column value by value.
 type TimestampChunkIterator struct {
 	refCount int64
@@ -1729,6 +1527,107 @@ func (cr *Date64ChunkIterator) Release() {
 	}
 }
 
+// DurationChunkIterator is an iterator for reading an Arrow Column value by value.
+type DurationChunkIterator struct {
+	refCount int64
+	col      *array.Column
+
+	// Things Chunked maintains. We're going to maintain it ourselves.
+	chunks []*array.Duration // cache the chunks on this iterator
+	length int64             // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
+	nulls  int64
+	dtype  arrow.DataType
+
+	// Things we need to maintain for the iterator
+	currentIndex int             // current chunk
+	currentChunk *array.Duration // current chunk
+}
+
+// NewDurationChunkIterator creates a new DurationChunkIterator for reading an Arrow Column.
+func NewDurationChunkIterator(col *array.Column) *DurationChunkIterator {
+	col.Retain()
+
+	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
+	columnChunks := col.Data().Chunks()
+	chunks := make([]*array.Duration, len(columnChunks))
+	var length int64
+	var nulls int64
+
+	for i, chunk := range columnChunks {
+		// Keep our own refs to chunks
+		chunks[i] = chunk.(*array.Duration)
+		// Retain the chunk
+		chunks[i].Retain()
+
+		// Keep our own counters instead of Chunked's
+		length += int64(chunk.Len())
+		nulls += int64(chunk.NullN())
+	}
+
+	return &DurationChunkIterator{
+		refCount: 1,
+		col:      col,
+
+		chunks: chunks,
+		length: length,
+		nulls:  nulls,
+		dtype:  col.DataType(),
+
+		currentIndex: 0,
+		currentChunk: nil,
+	}
+}
+
+// Chunk will return the current chunk that the iterator is on.
+func (cr *DurationChunkIterator) Chunk() *array.Duration { return cr.currentChunk }
+
+// ChunkValues returns the underlying []arrow.Duration chunk values.
+// Keep in mind the []arrow.Duration type might not be able
+// to account for nil values. You must check for those explicitly via the chunk.
+func (cr *DurationChunkIterator) ChunkValues() []arrow.Duration { return cr.Chunk().DurationValues() }
+
+// Next moves the iterator to the next chunk. This will return false
+// when there are no more chunks.
+func (cr *DurationChunkIterator) Next() bool {
+	if cr.currentIndex >= len(cr.chunks) {
+		return false
+	}
+
+	if cr.currentChunk != nil {
+		cr.currentChunk.Release()
+	}
+
+	cr.currentChunk = cr.chunks[cr.currentIndex]
+	cr.currentChunk.Retain()
+	cr.currentIndex++
+
+	return true
+}
+
+// Retain keeps a reference to the DurationChunkIterator
+func (cr *DurationChunkIterator) Retain() {
+	atomic.AddInt64(&cr.refCount, 1)
+}
+
+// Release removes a reference to the DurationChunkIterator
+func (cr *DurationChunkIterator) Release() {
+	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
+	ref := atomic.AddInt64(&cr.refCount, -1)
+	if ref == 0 {
+		cr.col.Release()
+		for i := range cr.chunks {
+			cr.chunks[i].Release()
+		}
+		if cr.currentChunk != nil {
+			cr.currentChunk.Release()
+			cr.currentChunk = nil
+		}
+		cr.col = nil
+		cr.chunks = nil
+		cr.dtype = nil
+	}
+}
+
 // MonthIntervalChunkIterator is an iterator for reading an Arrow Column value by value.
 type MonthIntervalChunkIterator struct {
 	refCount int64
@@ -1815,6 +1714,208 @@ func (cr *MonthIntervalChunkIterator) Retain() {
 
 // Release removes a reference to the MonthIntervalChunkIterator
 func (cr *MonthIntervalChunkIterator) Release() {
+	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
+	ref := atomic.AddInt64(&cr.refCount, -1)
+	if ref == 0 {
+		cr.col.Release()
+		for i := range cr.chunks {
+			cr.chunks[i].Release()
+		}
+		if cr.currentChunk != nil {
+			cr.currentChunk.Release()
+			cr.currentChunk = nil
+		}
+		cr.col = nil
+		cr.chunks = nil
+		cr.dtype = nil
+	}
+}
+
+// Float16ChunkIterator is an iterator for reading an Arrow Column value by value.
+type Float16ChunkIterator struct {
+	refCount int64
+	col      *array.Column
+
+	// Things Chunked maintains. We're going to maintain it ourselves.
+	chunks []*array.Float16 // cache the chunks on this iterator
+	length int64            // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
+	nulls  int64
+	dtype  arrow.DataType
+
+	// Things we need to maintain for the iterator
+	currentIndex int            // current chunk
+	currentChunk *array.Float16 // current chunk
+}
+
+// NewFloat16ChunkIterator creates a new Float16ChunkIterator for reading an Arrow Column.
+func NewFloat16ChunkIterator(col *array.Column) *Float16ChunkIterator {
+	col.Retain()
+
+	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
+	columnChunks := col.Data().Chunks()
+	chunks := make([]*array.Float16, len(columnChunks))
+	var length int64
+	var nulls int64
+
+	for i, chunk := range columnChunks {
+		// Keep our own refs to chunks
+		chunks[i] = chunk.(*array.Float16)
+		// Retain the chunk
+		chunks[i].Retain()
+
+		// Keep our own counters instead of Chunked's
+		length += int64(chunk.Len())
+		nulls += int64(chunk.NullN())
+	}
+
+	return &Float16ChunkIterator{
+		refCount: 1,
+		col:      col,
+
+		chunks: chunks,
+		length: length,
+		nulls:  nulls,
+		dtype:  col.DataType(),
+
+		currentIndex: 0,
+		currentChunk: nil,
+	}
+}
+
+// Chunk will return the current chunk that the iterator is on.
+func (cr *Float16ChunkIterator) Chunk() *array.Float16 { return cr.currentChunk }
+
+// ChunkValues returns the underlying []float16.Num chunk values.
+// Keep in mind the []float16.Num type might not be able
+// to account for nil values. You must check for those explicitly via the chunk.
+func (cr *Float16ChunkIterator) ChunkValues() []float16.Num { return cr.Chunk().Values() }
+
+// Next moves the iterator to the next chunk. This will return false
+// when there are no more chunks.
+func (cr *Float16ChunkIterator) Next() bool {
+	if cr.currentIndex >= len(cr.chunks) {
+		return false
+	}
+
+	if cr.currentChunk != nil {
+		cr.currentChunk.Release()
+	}
+
+	cr.currentChunk = cr.chunks[cr.currentIndex]
+	cr.currentChunk.Retain()
+	cr.currentIndex++
+
+	return true
+}
+
+// Retain keeps a reference to the Float16ChunkIterator
+func (cr *Float16ChunkIterator) Retain() {
+	atomic.AddInt64(&cr.refCount, 1)
+}
+
+// Release removes a reference to the Float16ChunkIterator
+func (cr *Float16ChunkIterator) Release() {
+	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
+	ref := atomic.AddInt64(&cr.refCount, -1)
+	if ref == 0 {
+		cr.col.Release()
+		for i := range cr.chunks {
+			cr.chunks[i].Release()
+		}
+		if cr.currentChunk != nil {
+			cr.currentChunk.Release()
+			cr.currentChunk = nil
+		}
+		cr.col = nil
+		cr.chunks = nil
+		cr.dtype = nil
+	}
+}
+
+// Decimal128ChunkIterator is an iterator for reading an Arrow Column value by value.
+type Decimal128ChunkIterator struct {
+	refCount int64
+	col      *array.Column
+
+	// Things Chunked maintains. We're going to maintain it ourselves.
+	chunks []*array.Decimal128 // cache the chunks on this iterator
+	length int64               // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
+	nulls  int64
+	dtype  arrow.DataType
+
+	// Things we need to maintain for the iterator
+	currentIndex int               // current chunk
+	currentChunk *array.Decimal128 // current chunk
+}
+
+// NewDecimal128ChunkIterator creates a new Decimal128ChunkIterator for reading an Arrow Column.
+func NewDecimal128ChunkIterator(col *array.Column) *Decimal128ChunkIterator {
+	col.Retain()
+
+	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
+	columnChunks := col.Data().Chunks()
+	chunks := make([]*array.Decimal128, len(columnChunks))
+	var length int64
+	var nulls int64
+
+	for i, chunk := range columnChunks {
+		// Keep our own refs to chunks
+		chunks[i] = chunk.(*array.Decimal128)
+		// Retain the chunk
+		chunks[i].Retain()
+
+		// Keep our own counters instead of Chunked's
+		length += int64(chunk.Len())
+		nulls += int64(chunk.NullN())
+	}
+
+	return &Decimal128ChunkIterator{
+		refCount: 1,
+		col:      col,
+
+		chunks: chunks,
+		length: length,
+		nulls:  nulls,
+		dtype:  col.DataType(),
+
+		currentIndex: 0,
+		currentChunk: nil,
+	}
+}
+
+// Chunk will return the current chunk that the iterator is on.
+func (cr *Decimal128ChunkIterator) Chunk() *array.Decimal128 { return cr.currentChunk }
+
+// ChunkValues returns the underlying []decimal128.Num chunk values.
+// Keep in mind the []decimal128.Num type might not be able
+// to account for nil values. You must check for those explicitly via the chunk.
+func (cr *Decimal128ChunkIterator) ChunkValues() []decimal128.Num { return cr.Chunk().Values() }
+
+// Next moves the iterator to the next chunk. This will return false
+// when there are no more chunks.
+func (cr *Decimal128ChunkIterator) Next() bool {
+	if cr.currentIndex >= len(cr.chunks) {
+		return false
+	}
+
+	if cr.currentChunk != nil {
+		cr.currentChunk.Release()
+	}
+
+	cr.currentChunk = cr.chunks[cr.currentIndex]
+	cr.currentChunk.Retain()
+	cr.currentIndex++
+
+	return true
+}
+
+// Retain keeps a reference to the Decimal128ChunkIterator
+func (cr *Decimal128ChunkIterator) Retain() {
+	atomic.AddInt64(&cr.refCount, 1)
+}
+
+// Release removes a reference to the Decimal128ChunkIterator
+func (cr *Decimal128ChunkIterator) Release() {
 	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
 	ref := atomic.AddInt64(&cr.refCount, -1)
 	if ref == 0 {

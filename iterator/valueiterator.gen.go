@@ -1152,234 +1152,6 @@ func (vr *Uint8ValueIterator) Release() {
 	}
 }
 
-// Float16ValueIterator is an iterator for reading an Arrow Column value by value.
-type Float16ValueIterator struct {
-	refCount      int64
-	chunkIterator *Float16ChunkIterator
-
-	// Things we need to maintain for the iterator
-	index  int            // current value index
-	values []float16.Num  // current chunk values
-	ref    *array.Float16 // the chunk reference
-	done   bool           // there are no more elements for this iterator
-}
-
-// NewFloat16ValueIterator creates a new Float16ValueIterator for reading an Arrow Column.
-func NewFloat16ValueIterator(col *array.Column) *Float16ValueIterator {
-	// We need a ChunkIterator to read the chunks
-	chunkIterator := NewFloat16ChunkIterator(col)
-
-	return &Float16ValueIterator{
-		refCount:      1,
-		chunkIterator: chunkIterator,
-
-		index:  0,
-		values: nil,
-	}
-}
-
-// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
-func (vr *Float16ValueIterator) Value() (float16.Num, bool) {
-	return vr.values[vr.index], vr.ref.IsNull(vr.index)
-}
-
-// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
-func (vr *Float16ValueIterator) ValuePointer() *float16.Num {
-	if vr.ref.IsNull(vr.index) {
-		return nil
-	}
-	return &vr.values[vr.index]
-}
-
-// ValueInterface returns the current value as an interface{}.
-func (vr *Float16ValueIterator) ValueInterface() interface{} {
-	if vr.ref.IsNull(vr.index) {
-		return nil
-	}
-	return vr.values[vr.index]
-}
-
-// Next moves the iterator to the next value. This will return false
-// when there are no more values.
-func (vr *Float16ValueIterator) Next() bool {
-	if vr.done {
-		return false
-	}
-
-	// Move the index up
-	vr.index++
-
-	// Keep moving the chunk up until we get one with data
-	for vr.values == nil || vr.index >= len(vr.values) {
-		if !vr.nextChunk() {
-			// There were no more chunks with data in them
-			vr.done = true
-			return false
-		}
-	}
-
-	return true
-}
-
-func (vr *Float16ValueIterator) nextChunk() bool {
-	// Advance the chunk until we get one with data in it or we are done
-	if !vr.chunkIterator.Next() {
-		// No more chunks
-		return false
-	}
-
-	// There was another chunk.
-	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
-	ref := vr.chunkIterator.Chunk()
-	ref.Retain()
-
-	if vr.ref != nil {
-		vr.ref.Release()
-	}
-
-	vr.ref = ref
-	vr.values = vr.chunkIterator.ChunkValues()
-	vr.index = 0
-	return true
-}
-
-// Retain keeps a reference to the Float16ValueIterator.
-func (vr *Float16ValueIterator) Retain() {
-	atomic.AddInt64(&vr.refCount, 1)
-}
-
-// Release removes a reference to the Float16ValueIterator.
-func (vr *Float16ValueIterator) Release() {
-	refs := atomic.AddInt64(&vr.refCount, -1)
-	debug.Assert(refs >= 0, "too many releases")
-	if refs == 0 {
-		if vr.chunkIterator != nil {
-			vr.chunkIterator.Release()
-			vr.chunkIterator = nil
-		}
-
-		if vr.ref != nil {
-			vr.ref.Release()
-			vr.ref = nil
-		}
-		vr.values = nil
-	}
-}
-
-// Decimal128ValueIterator is an iterator for reading an Arrow Column value by value.
-type Decimal128ValueIterator struct {
-	refCount      int64
-	chunkIterator *Decimal128ChunkIterator
-
-	// Things we need to maintain for the iterator
-	index  int               // current value index
-	values []decimal128.Num  // current chunk values
-	ref    *array.Decimal128 // the chunk reference
-	done   bool              // there are no more elements for this iterator
-}
-
-// NewDecimal128ValueIterator creates a new Decimal128ValueIterator for reading an Arrow Column.
-func NewDecimal128ValueIterator(col *array.Column) *Decimal128ValueIterator {
-	// We need a ChunkIterator to read the chunks
-	chunkIterator := NewDecimal128ChunkIterator(col)
-
-	return &Decimal128ValueIterator{
-		refCount:      1,
-		chunkIterator: chunkIterator,
-
-		index:  0,
-		values: nil,
-	}
-}
-
-// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
-func (vr *Decimal128ValueIterator) Value() (decimal128.Num, bool) {
-	return vr.values[vr.index], vr.ref.IsNull(vr.index)
-}
-
-// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
-func (vr *Decimal128ValueIterator) ValuePointer() *decimal128.Num {
-	if vr.ref.IsNull(vr.index) {
-		return nil
-	}
-	return &vr.values[vr.index]
-}
-
-// ValueInterface returns the current value as an interface{}.
-func (vr *Decimal128ValueIterator) ValueInterface() interface{} {
-	if vr.ref.IsNull(vr.index) {
-		return nil
-	}
-	return vr.values[vr.index]
-}
-
-// Next moves the iterator to the next value. This will return false
-// when there are no more values.
-func (vr *Decimal128ValueIterator) Next() bool {
-	if vr.done {
-		return false
-	}
-
-	// Move the index up
-	vr.index++
-
-	// Keep moving the chunk up until we get one with data
-	for vr.values == nil || vr.index >= len(vr.values) {
-		if !vr.nextChunk() {
-			// There were no more chunks with data in them
-			vr.done = true
-			return false
-		}
-	}
-
-	return true
-}
-
-func (vr *Decimal128ValueIterator) nextChunk() bool {
-	// Advance the chunk until we get one with data in it or we are done
-	if !vr.chunkIterator.Next() {
-		// No more chunks
-		return false
-	}
-
-	// There was another chunk.
-	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
-	ref := vr.chunkIterator.Chunk()
-	ref.Retain()
-
-	if vr.ref != nil {
-		vr.ref.Release()
-	}
-
-	vr.ref = ref
-	vr.values = vr.chunkIterator.ChunkValues()
-	vr.index = 0
-	return true
-}
-
-// Retain keeps a reference to the Decimal128ValueIterator.
-func (vr *Decimal128ValueIterator) Retain() {
-	atomic.AddInt64(&vr.refCount, 1)
-}
-
-// Release removes a reference to the Decimal128ValueIterator.
-func (vr *Decimal128ValueIterator) Release() {
-	refs := atomic.AddInt64(&vr.refCount, -1)
-	debug.Assert(refs >= 0, "too many releases")
-	if refs == 0 {
-		if vr.chunkIterator != nil {
-			vr.chunkIterator.Release()
-			vr.chunkIterator = nil
-		}
-
-		if vr.ref != nil {
-			vr.ref.Release()
-			vr.ref = nil
-		}
-		vr.values = nil
-	}
-}
-
 // TimestampValueIterator is an iterator for reading an Arrow Column value by value.
 type TimestampValueIterator struct {
 	refCount      int64
@@ -1950,6 +1722,120 @@ func (vr *Date64ValueIterator) Release() {
 	}
 }
 
+// DurationValueIterator is an iterator for reading an Arrow Column value by value.
+type DurationValueIterator struct {
+	refCount      int64
+	chunkIterator *DurationChunkIterator
+
+	// Things we need to maintain for the iterator
+	index  int              // current value index
+	values []arrow.Duration // current chunk values
+	ref    *array.Duration  // the chunk reference
+	done   bool             // there are no more elements for this iterator
+}
+
+// NewDurationValueIterator creates a new DurationValueIterator for reading an Arrow Column.
+func NewDurationValueIterator(col *array.Column) *DurationValueIterator {
+	// We need a ChunkIterator to read the chunks
+	chunkIterator := NewDurationChunkIterator(col)
+
+	return &DurationValueIterator{
+		refCount:      1,
+		chunkIterator: chunkIterator,
+
+		index:  0,
+		values: nil,
+	}
+}
+
+// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
+func (vr *DurationValueIterator) Value() (arrow.Duration, bool) {
+	return vr.values[vr.index], vr.ref.IsNull(vr.index)
+}
+
+// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
+func (vr *DurationValueIterator) ValuePointer() *arrow.Duration {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return &vr.values[vr.index]
+}
+
+// ValueInterface returns the current value as an interface{}.
+func (vr *DurationValueIterator) ValueInterface() interface{} {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return vr.values[vr.index]
+}
+
+// Next moves the iterator to the next value. This will return false
+// when there are no more values.
+func (vr *DurationValueIterator) Next() bool {
+	if vr.done {
+		return false
+	}
+
+	// Move the index up
+	vr.index++
+
+	// Keep moving the chunk up until we get one with data
+	for vr.values == nil || vr.index >= len(vr.values) {
+		if !vr.nextChunk() {
+			// There were no more chunks with data in them
+			vr.done = true
+			return false
+		}
+	}
+
+	return true
+}
+
+func (vr *DurationValueIterator) nextChunk() bool {
+	// Advance the chunk until we get one with data in it or we are done
+	if !vr.chunkIterator.Next() {
+		// No more chunks
+		return false
+	}
+
+	// There was another chunk.
+	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
+	ref := vr.chunkIterator.Chunk()
+	ref.Retain()
+
+	if vr.ref != nil {
+		vr.ref.Release()
+	}
+
+	vr.ref = ref
+	vr.values = vr.chunkIterator.ChunkValues()
+	vr.index = 0
+	return true
+}
+
+// Retain keeps a reference to the DurationValueIterator.
+func (vr *DurationValueIterator) Retain() {
+	atomic.AddInt64(&vr.refCount, 1)
+}
+
+// Release removes a reference to the DurationValueIterator.
+func (vr *DurationValueIterator) Release() {
+	refs := atomic.AddInt64(&vr.refCount, -1)
+	debug.Assert(refs >= 0, "too many releases")
+	if refs == 0 {
+		if vr.chunkIterator != nil {
+			vr.chunkIterator.Release()
+			vr.chunkIterator = nil
+		}
+
+		if vr.ref != nil {
+			vr.ref.Release()
+			vr.ref = nil
+		}
+		vr.values = nil
+	}
+}
+
 // MonthIntervalValueIterator is an iterator for reading an Arrow Column value by value.
 type MonthIntervalValueIterator struct {
 	refCount      int64
@@ -2048,6 +1934,234 @@ func (vr *MonthIntervalValueIterator) Retain() {
 
 // Release removes a reference to the MonthIntervalValueIterator.
 func (vr *MonthIntervalValueIterator) Release() {
+	refs := atomic.AddInt64(&vr.refCount, -1)
+	debug.Assert(refs >= 0, "too many releases")
+	if refs == 0 {
+		if vr.chunkIterator != nil {
+			vr.chunkIterator.Release()
+			vr.chunkIterator = nil
+		}
+
+		if vr.ref != nil {
+			vr.ref.Release()
+			vr.ref = nil
+		}
+		vr.values = nil
+	}
+}
+
+// Float16ValueIterator is an iterator for reading an Arrow Column value by value.
+type Float16ValueIterator struct {
+	refCount      int64
+	chunkIterator *Float16ChunkIterator
+
+	// Things we need to maintain for the iterator
+	index  int            // current value index
+	values []float16.Num  // current chunk values
+	ref    *array.Float16 // the chunk reference
+	done   bool           // there are no more elements for this iterator
+}
+
+// NewFloat16ValueIterator creates a new Float16ValueIterator for reading an Arrow Column.
+func NewFloat16ValueIterator(col *array.Column) *Float16ValueIterator {
+	// We need a ChunkIterator to read the chunks
+	chunkIterator := NewFloat16ChunkIterator(col)
+
+	return &Float16ValueIterator{
+		refCount:      1,
+		chunkIterator: chunkIterator,
+
+		index:  0,
+		values: nil,
+	}
+}
+
+// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
+func (vr *Float16ValueIterator) Value() (float16.Num, bool) {
+	return vr.values[vr.index], vr.ref.IsNull(vr.index)
+}
+
+// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
+func (vr *Float16ValueIterator) ValuePointer() *float16.Num {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return &vr.values[vr.index]
+}
+
+// ValueInterface returns the current value as an interface{}.
+func (vr *Float16ValueIterator) ValueInterface() interface{} {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return vr.values[vr.index]
+}
+
+// Next moves the iterator to the next value. This will return false
+// when there are no more values.
+func (vr *Float16ValueIterator) Next() bool {
+	if vr.done {
+		return false
+	}
+
+	// Move the index up
+	vr.index++
+
+	// Keep moving the chunk up until we get one with data
+	for vr.values == nil || vr.index >= len(vr.values) {
+		if !vr.nextChunk() {
+			// There were no more chunks with data in them
+			vr.done = true
+			return false
+		}
+	}
+
+	return true
+}
+
+func (vr *Float16ValueIterator) nextChunk() bool {
+	// Advance the chunk until we get one with data in it or we are done
+	if !vr.chunkIterator.Next() {
+		// No more chunks
+		return false
+	}
+
+	// There was another chunk.
+	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
+	ref := vr.chunkIterator.Chunk()
+	ref.Retain()
+
+	if vr.ref != nil {
+		vr.ref.Release()
+	}
+
+	vr.ref = ref
+	vr.values = vr.chunkIterator.ChunkValues()
+	vr.index = 0
+	return true
+}
+
+// Retain keeps a reference to the Float16ValueIterator.
+func (vr *Float16ValueIterator) Retain() {
+	atomic.AddInt64(&vr.refCount, 1)
+}
+
+// Release removes a reference to the Float16ValueIterator.
+func (vr *Float16ValueIterator) Release() {
+	refs := atomic.AddInt64(&vr.refCount, -1)
+	debug.Assert(refs >= 0, "too many releases")
+	if refs == 0 {
+		if vr.chunkIterator != nil {
+			vr.chunkIterator.Release()
+			vr.chunkIterator = nil
+		}
+
+		if vr.ref != nil {
+			vr.ref.Release()
+			vr.ref = nil
+		}
+		vr.values = nil
+	}
+}
+
+// Decimal128ValueIterator is an iterator for reading an Arrow Column value by value.
+type Decimal128ValueIterator struct {
+	refCount      int64
+	chunkIterator *Decimal128ChunkIterator
+
+	// Things we need to maintain for the iterator
+	index  int               // current value index
+	values []decimal128.Num  // current chunk values
+	ref    *array.Decimal128 // the chunk reference
+	done   bool              // there are no more elements for this iterator
+}
+
+// NewDecimal128ValueIterator creates a new Decimal128ValueIterator for reading an Arrow Column.
+func NewDecimal128ValueIterator(col *array.Column) *Decimal128ValueIterator {
+	// We need a ChunkIterator to read the chunks
+	chunkIterator := NewDecimal128ChunkIterator(col)
+
+	return &Decimal128ValueIterator{
+		refCount:      1,
+		chunkIterator: chunkIterator,
+
+		index:  0,
+		values: nil,
+	}
+}
+
+// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
+func (vr *Decimal128ValueIterator) Value() (decimal128.Num, bool) {
+	return vr.values[vr.index], vr.ref.IsNull(vr.index)
+}
+
+// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
+func (vr *Decimal128ValueIterator) ValuePointer() *decimal128.Num {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return &vr.values[vr.index]
+}
+
+// ValueInterface returns the current value as an interface{}.
+func (vr *Decimal128ValueIterator) ValueInterface() interface{} {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return vr.values[vr.index]
+}
+
+// Next moves the iterator to the next value. This will return false
+// when there are no more values.
+func (vr *Decimal128ValueIterator) Next() bool {
+	if vr.done {
+		return false
+	}
+
+	// Move the index up
+	vr.index++
+
+	// Keep moving the chunk up until we get one with data
+	for vr.values == nil || vr.index >= len(vr.values) {
+		if !vr.nextChunk() {
+			// There were no more chunks with data in them
+			vr.done = true
+			return false
+		}
+	}
+
+	return true
+}
+
+func (vr *Decimal128ValueIterator) nextChunk() bool {
+	// Advance the chunk until we get one with data in it or we are done
+	if !vr.chunkIterator.Next() {
+		// No more chunks
+		return false
+	}
+
+	// There was another chunk.
+	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
+	ref := vr.chunkIterator.Chunk()
+	ref.Retain()
+
+	if vr.ref != nil {
+		vr.ref.Release()
+	}
+
+	vr.ref = ref
+	vr.values = vr.chunkIterator.ChunkValues()
+	vr.index = 0
+	return true
+}
+
+// Retain keeps a reference to the Decimal128ValueIterator.
+func (vr *Decimal128ValueIterator) Retain() {
+	atomic.AddInt64(&vr.refCount, 1)
+}
+
+// Release removes a reference to the Decimal128ValueIterator.
+func (vr *Decimal128ValueIterator) Release() {
 	refs := atomic.AddInt64(&vr.refCount, -1)
 	debug.Assert(refs >= 0, "too many releases")
 	if refs == 0 {

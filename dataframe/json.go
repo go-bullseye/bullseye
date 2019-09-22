@@ -63,46 +63,25 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 	case arrow.NULL:
 		obj[name] = nil
 		return nil
-	case arrow.BOOL:
-		obj[name] = value
-		return nil
-	case arrow.UINT8:
-		obj[name] = value
-		return nil
-	case arrow.INT8:
-		obj[name] = value
-		return nil
-	case arrow.UINT16:
-		obj[name] = value
-		return nil
-	case arrow.INT16:
-		obj[name] = value
-		return nil
-	case arrow.UINT32:
-		obj[name] = value
-		return nil
-	case arrow.INT32:
-		obj[name] = value
-		return nil
-	case arrow.UINT64:
-		obj[name] = value
-		return nil
-	case arrow.INT64:
+	case arrow.BOOL,
+		arrow.UINT8, arrow.INT8,
+		arrow.UINT16, arrow.INT16,
+		arrow.UINT32, arrow.INT32,
+		arrow.UINT64, arrow.INT64,
+		arrow.FLOAT32, arrow.FLOAT64,
+		arrow.DATE32, arrow.DATE64,
+		arrow.TIME32, arrow.TIME64,
+		arrow.TIMESTAMP,
+		arrow.INTERVAL, // will be converted to int32 when MonthInterval and {days,milliseconds} struct when DayTimeInterval
+		arrow.DURATION, // will be converted to int64
+		arrow.STRING:
 		obj[name] = value
 		return nil
 	case arrow.FLOAT16:
 		obj[name] = value.(float16.Num).Float32()
 		return nil
-	case arrow.FLOAT32:
-		obj[name] = value
-		return nil
-	case arrow.FLOAT64:
-		obj[name] = value
-		return nil
-	case arrow.STRING:
-		obj[name] = value
-		return nil
 	case arrow.BINARY:
+		// TODO(nickpoorman): Verify this is correct....
 		obj[name] = value
 		return nil
 	case arrow.FIXED_SIZE_BINARY:
@@ -114,24 +93,6 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 		}
 		obj[name] = string(v) // re-convert as string to prevent json.Marshal from base64-encoding it.
 		return nil
-	case arrow.DATE32:
-		obj[name] = value // will be converted to int32
-		return nil
-	case arrow.DATE64:
-		obj[name] = value // will be converted to int64
-		return nil
-	case arrow.TIMESTAMP:
-		obj[name] = value // will be converted to int64
-		return nil
-	case arrow.TIME32:
-		obj[name] = value // will be converted to int32
-		return nil
-	case arrow.TIME64:
-		obj[name] = value // will be converted to int64
-		return nil
-	case arrow.INTERVAL:
-		obj[name] = value // will be converted to int32 when MonthInterval and {days,milliseconds} struct when DayTimeInterval
-		return nil
 	case arrow.DECIMAL:
 		d128, ok := value.(decimal128.Num)
 		if !ok {
@@ -139,23 +100,20 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 		}
 		obj[name] = Signed128BitInteger{Lo: d128.LowBits(), Hi: d128.HighBits()}
 		return nil
-	// case arrow.LIST:
-	// 	panic("not implemented")
-	// case arrow.STRUCT:
-	// 	panic("not implemented")
-	// case arrow.UNION:
-	// 	panic("not implemented")
-	// case arrow.DICTIONARY:
-	// 	panic("not implemented")
-	// case arrow.MAP:
-	// 	panic("not implemented")
-	// case arrow.EXTENSION:
-	// 	panic("not implemented")
-	// case arrow.FIXED_SIZE_LIST:
-	// 	panic("not implemented")
-	case arrow.DURATION:
-		obj[name] = value // will be converted to int64
-		return nil
+		// case arrow.LIST:
+		// 	panic("not implemented")
+		// case arrow.STRUCT:
+		// 	panic("not implemented")
+		// case arrow.UNION:
+		// 	panic("not implemented")
+		// case arrow.DICTIONARY:
+		// 	panic("not implemented")
+		// case arrow.MAP:
+		// 	panic("not implemented")
+		// case arrow.EXTENSION:
+		// 	panic("not implemented")
+		// case arrow.FIXED_SIZE_LIST:
+		// 	panic("not implemented")
 	}
 
 	return errors.Errorf("dataframe/json - type not implemented: %s", field.Type.Name())
