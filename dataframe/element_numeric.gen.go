@@ -7,6 +7,7 @@ import (
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/float16"
+	"github.com/pkg/errors"
 )
 
 // Int64Element has logic to apply to this type.
@@ -26,7 +27,7 @@ func NewInt64Element(v interface{}) *Int64Element {
 func (e Int64Element) compare(r Element, f func(left, right int64) bool) (bool, error) {
 	rE, ok := r.(*Int64Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Int64Element", r)
+		return false, errors.Errorf("cannot cast %v to Int64Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -37,11 +38,11 @@ func (e Int64Element) compare(r Element, f func(left, right int64) bool) (bool, 
 
 	lv, lok := e.v.(int64)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a int64", e.v)
+		return false, errors.Errorf("cannot assert %v is a int64", e.v)
 	}
 	rv, rok := rE.v.(int64)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a int64", rE.v)
+		return false, errors.Errorf("cannot assert %v is a int64", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -147,7 +148,7 @@ func NewUint64Element(v interface{}) *Uint64Element {
 func (e Uint64Element) compare(r Element, f func(left, right uint64) bool) (bool, error) {
 	rE, ok := r.(*Uint64Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Uint64Element", r)
+		return false, errors.Errorf("cannot cast %v to Uint64Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -158,11 +159,11 @@ func (e Uint64Element) compare(r Element, f func(left, right uint64) bool) (bool
 
 	lv, lok := e.v.(uint64)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a uint64", e.v)
+		return false, errors.Errorf("cannot assert %v is a uint64", e.v)
 	}
 	rv, rok := rE.v.(uint64)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a uint64", rE.v)
+		return false, errors.Errorf("cannot assert %v is a uint64", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -268,7 +269,7 @@ func NewFloat64Element(v interface{}) *Float64Element {
 func (e Float64Element) compare(r Element, f func(left, right float64) bool) (bool, error) {
 	rE, ok := r.(*Float64Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Float64Element", r)
+		return false, errors.Errorf("cannot cast %v to Float64Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -279,11 +280,11 @@ func (e Float64Element) compare(r Element, f func(left, right float64) bool) (bo
 
 	lv, lok := e.v.(float64)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a float64", e.v)
+		return false, errors.Errorf("cannot assert %v is a float64", e.v)
 	}
 	rv, rok := rE.v.(float64)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a float64", rE.v)
+		return false, errors.Errorf("cannot assert %v is a float64", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -389,7 +390,7 @@ func NewInt32Element(v interface{}) *Int32Element {
 func (e Int32Element) compare(r Element, f func(left, right int32) bool) (bool, error) {
 	rE, ok := r.(*Int32Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Int32Element", r)
+		return false, errors.Errorf("cannot cast %v to Int32Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -400,11 +401,11 @@ func (e Int32Element) compare(r Element, f func(left, right int32) bool) (bool, 
 
 	lv, lok := e.v.(int32)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a int32", e.v)
+		return false, errors.Errorf("cannot assert %v is a int32", e.v)
 	}
 	rv, rok := rE.v.(int32)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a int32", rE.v)
+		return false, errors.Errorf("cannot assert %v is a int32", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -510,7 +511,7 @@ func NewUint32Element(v interface{}) *Uint32Element {
 func (e Uint32Element) compare(r Element, f func(left, right uint32) bool) (bool, error) {
 	rE, ok := r.(*Uint32Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Uint32Element", r)
+		return false, errors.Errorf("cannot cast %v to Uint32Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -521,11 +522,11 @@ func (e Uint32Element) compare(r Element, f func(left, right uint32) bool) (bool
 
 	lv, lok := e.v.(uint32)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a uint32", e.v)
+		return false, errors.Errorf("cannot assert %v is a uint32", e.v)
 	}
 	rv, rok := rE.v.(uint32)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a uint32", rE.v)
+		return false, errors.Errorf("cannot assert %v is a uint32", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -631,7 +632,7 @@ func NewFloat32Element(v interface{}) *Float32Element {
 func (e Float32Element) compare(r Element, f func(left, right float32) bool) (bool, error) {
 	rE, ok := r.(*Float32Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Float32Element", r)
+		return false, errors.Errorf("cannot cast %v to Float32Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -642,11 +643,11 @@ func (e Float32Element) compare(r Element, f func(left, right float32) bool) (bo
 
 	lv, lok := e.v.(float32)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a float32", e.v)
+		return false, errors.Errorf("cannot assert %v is a float32", e.v)
 	}
 	rv, rok := rE.v.(float32)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a float32", rE.v)
+		return false, errors.Errorf("cannot assert %v is a float32", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -752,7 +753,7 @@ func NewInt16Element(v interface{}) *Int16Element {
 func (e Int16Element) compare(r Element, f func(left, right int16) bool) (bool, error) {
 	rE, ok := r.(*Int16Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Int16Element", r)
+		return false, errors.Errorf("cannot cast %v to Int16Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -763,11 +764,11 @@ func (e Int16Element) compare(r Element, f func(left, right int16) bool) (bool, 
 
 	lv, lok := e.v.(int16)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a int16", e.v)
+		return false, errors.Errorf("cannot assert %v is a int16", e.v)
 	}
 	rv, rok := rE.v.(int16)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a int16", rE.v)
+		return false, errors.Errorf("cannot assert %v is a int16", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -873,7 +874,7 @@ func NewUint16Element(v interface{}) *Uint16Element {
 func (e Uint16Element) compare(r Element, f func(left, right uint16) bool) (bool, error) {
 	rE, ok := r.(*Uint16Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Uint16Element", r)
+		return false, errors.Errorf("cannot cast %v to Uint16Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -884,11 +885,11 @@ func (e Uint16Element) compare(r Element, f func(left, right uint16) bool) (bool
 
 	lv, lok := e.v.(uint16)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a uint16", e.v)
+		return false, errors.Errorf("cannot assert %v is a uint16", e.v)
 	}
 	rv, rok := rE.v.(uint16)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a uint16", rE.v)
+		return false, errors.Errorf("cannot assert %v is a uint16", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -994,7 +995,7 @@ func NewInt8Element(v interface{}) *Int8Element {
 func (e Int8Element) compare(r Element, f func(left, right int8) bool) (bool, error) {
 	rE, ok := r.(*Int8Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Int8Element", r)
+		return false, errors.Errorf("cannot cast %v to Int8Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1005,11 +1006,11 @@ func (e Int8Element) compare(r Element, f func(left, right int8) bool) (bool, er
 
 	lv, lok := e.v.(int8)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a int8", e.v)
+		return false, errors.Errorf("cannot assert %v is a int8", e.v)
 	}
 	rv, rok := rE.v.(int8)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a int8", rE.v)
+		return false, errors.Errorf("cannot assert %v is a int8", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1115,7 +1116,7 @@ func NewUint8Element(v interface{}) *Uint8Element {
 func (e Uint8Element) compare(r Element, f func(left, right uint8) bool) (bool, error) {
 	rE, ok := r.(*Uint8Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Uint8Element", r)
+		return false, errors.Errorf("cannot cast %v to Uint8Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1126,11 +1127,11 @@ func (e Uint8Element) compare(r Element, f func(left, right uint8) bool) (bool, 
 
 	lv, lok := e.v.(uint8)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a uint8", e.v)
+		return false, errors.Errorf("cannot assert %v is a uint8", e.v)
 	}
 	rv, rok := rE.v.(uint8)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a uint8", rE.v)
+		return false, errors.Errorf("cannot assert %v is a uint8", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1236,7 +1237,7 @@ func NewFloat16Element(v interface{}) *Float16Element {
 func (e Float16Element) compare(r Element, f func(left, right float16.Num) bool) (bool, error) {
 	rE, ok := r.(*Float16Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Float16Element", r)
+		return false, errors.Errorf("cannot cast %v to Float16Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1247,11 +1248,11 @@ func (e Float16Element) compare(r Element, f func(left, right float16.Num) bool)
 
 	lv, lok := e.v.(float16.Num)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a float16.Num", e.v)
+		return false, errors.Errorf("cannot assert %v is a float16.Num", e.v)
 	}
 	rv, rok := rE.v.(float16.Num)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a float16.Num", rE.v)
+		return false, errors.Errorf("cannot assert %v is a float16.Num", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1357,7 +1358,7 @@ func NewTimestampElement(v interface{}) *TimestampElement {
 func (e TimestampElement) compare(r Element, f func(left, right arrow.Timestamp) bool) (bool, error) {
 	rE, ok := r.(*TimestampElement)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to TimestampElement", r)
+		return false, errors.Errorf("cannot cast %v to TimestampElement", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1368,11 +1369,11 @@ func (e TimestampElement) compare(r Element, f func(left, right arrow.Timestamp)
 
 	lv, lok := e.v.(arrow.Timestamp)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Timestamp", e.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Timestamp", e.v)
 	}
 	rv, rok := rE.v.(arrow.Timestamp)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Timestamp", rE.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Timestamp", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1478,7 +1479,7 @@ func NewTime32Element(v interface{}) *Time32Element {
 func (e Time32Element) compare(r Element, f func(left, right arrow.Time32) bool) (bool, error) {
 	rE, ok := r.(*Time32Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Time32Element", r)
+		return false, errors.Errorf("cannot cast %v to Time32Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1489,11 +1490,11 @@ func (e Time32Element) compare(r Element, f func(left, right arrow.Time32) bool)
 
 	lv, lok := e.v.(arrow.Time32)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Time32", e.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Time32", e.v)
 	}
 	rv, rok := rE.v.(arrow.Time32)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Time32", rE.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Time32", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1599,7 +1600,7 @@ func NewTime64Element(v interface{}) *Time64Element {
 func (e Time64Element) compare(r Element, f func(left, right arrow.Time64) bool) (bool, error) {
 	rE, ok := r.(*Time64Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Time64Element", r)
+		return false, errors.Errorf("cannot cast %v to Time64Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1610,11 +1611,11 @@ func (e Time64Element) compare(r Element, f func(left, right arrow.Time64) bool)
 
 	lv, lok := e.v.(arrow.Time64)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Time64", e.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Time64", e.v)
 	}
 	rv, rok := rE.v.(arrow.Time64)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Time64", rE.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Time64", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1720,7 +1721,7 @@ func NewDate32Element(v interface{}) *Date32Element {
 func (e Date32Element) compare(r Element, f func(left, right arrow.Date32) bool) (bool, error) {
 	rE, ok := r.(*Date32Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Date32Element", r)
+		return false, errors.Errorf("cannot cast %v to Date32Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1731,11 +1732,11 @@ func (e Date32Element) compare(r Element, f func(left, right arrow.Date32) bool)
 
 	lv, lok := e.v.(arrow.Date32)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Date32", e.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Date32", e.v)
 	}
 	rv, rok := rE.v.(arrow.Date32)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Date32", rE.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Date32", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1841,7 +1842,7 @@ func NewDate64Element(v interface{}) *Date64Element {
 func (e Date64Element) compare(r Element, f func(left, right arrow.Date64) bool) (bool, error) {
 	rE, ok := r.(*Date64Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to Date64Element", r)
+		return false, errors.Errorf("cannot cast %v to Date64Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -1852,11 +1853,11 @@ func (e Date64Element) compare(r Element, f func(left, right arrow.Date64) bool)
 
 	lv, lok := e.v.(arrow.Date64)
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Date64", e.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Date64", e.v)
 	}
 	rv, rok := rE.v.(arrow.Date64)
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a arrow.Date64", rE.v)
+		return false, errors.Errorf("cannot assert %v is a arrow.Date64", rE.v)
 	}
 
 	return f(lv, rv), nil
@@ -1942,5 +1943,126 @@ func (e Date64Element) String() string {
 
 // IsNil returns true when the underlying value is nil.
 func (e Date64Element) IsNil() bool {
+	return e.v == nil
+}
+
+// MonthIntervalElement has logic to apply to this type.
+type MonthIntervalElement struct {
+	v interface{}
+}
+
+// NewMonthIntervalElement creates a new MonthIntervalElement logic wrapper
+// from the given value provided as v.
+func NewMonthIntervalElement(v interface{}) *MonthIntervalElement {
+	return &MonthIntervalElement{
+		v: v,
+	}
+}
+
+// compare takes the left and right elements and applies the comparator function to them.
+func (e MonthIntervalElement) compare(r Element, f func(left, right arrow.MonthInterval) bool) (bool, error) {
+	rE, ok := r.(*MonthIntervalElement)
+	if !ok {
+		return false, errors.Errorf("cannot cast %v to MonthIntervalElement", r)
+	}
+
+	// When their nil status isn't the same, we can't compare them.
+	// Explicit both nil should be handled elsewhere.
+	if e.IsNil() != rE.IsNil() {
+		return false, nil
+	}
+
+	lv, lok := e.v.(arrow.MonthInterval)
+	if !lok {
+		return false, errors.Errorf("cannot assert %v is a arrow.MonthInterval", e.v)
+	}
+	rv, rok := rE.v.(arrow.MonthInterval)
+	if !rok {
+		return false, errors.Errorf("cannot assert %v is a arrow.MonthInterval", rE.v)
+	}
+
+	return f(lv, rv), nil
+}
+
+// Comparation methods
+
+// Eq returns true if the left MonthIntervalElement is equal to the right MonthIntervalElement.
+// When both are nil Eq returns false because nil actualy signifies "unknown"
+// and you can't compare two things when you don't know what they are.
+func (e MonthIntervalElement) Eq(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return false, nil
+	}
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left == right
+	})
+}
+
+// EqStrict returns true if the left MonthIntervalElement is equal to the right MonthIntervalElement.
+// When both are nil EqStrict returns true.
+func (e MonthIntervalElement) EqStrict(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return true, nil
+	}
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left == right
+	})
+}
+
+// Neq returns true if the left MonthIntervalElement
+// is not equal to the right MonthIntervalElement.
+func (e MonthIntervalElement) Neq(r Element) (bool, error) {
+	v, ok := e.Eq(r)
+	return !v, ok
+}
+
+// Less returns true if the left MonthIntervalElement
+// is less than the right MonthIntervalElement.
+func (e MonthIntervalElement) Less(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left < right
+	})
+}
+
+// LessEq returns true if the left MonthIntervalElement
+// is less than or equal to the right MonthIntervalElement.
+func (e MonthIntervalElement) LessEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left <= right
+	})
+}
+
+// Greater returns true if the left MonthIntervalElement
+// is greter than the right MonthIntervalElement.
+func (e MonthIntervalElement) Greater(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left > right
+	})
+}
+
+// GreaterEq returns true if the left MonthIntervalElement
+// is greter than or equal to the right MonthIntervalElement.
+func (e MonthIntervalElement) GreaterEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.MonthInterval) bool {
+		return left >= right
+	})
+}
+
+// Accessor/conversion methods
+
+// Copy returns a copy of this MonthIntervalElement.
+func (e MonthIntervalElement) Copy() Element {
+	return e
+}
+
+// String prints the value of this element as a string.
+func (e MonthIntervalElement) String() string {
+	return fmt.Sprintf("%v", e.v)
+}
+
+// Information methods
+
+// IsNil returns true when the underlying value is nil.
+func (e MonthIntervalElement) IsNil() bool {
 	return e.v == nil
 }

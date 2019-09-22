@@ -3,7 +3,6 @@ package dataframe
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -116,23 +115,23 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 		obj[name] = string(v) // re-convert as string to prevent json.Marshal from base64-encoding it.
 		return nil
 	case arrow.DATE32:
-		obj[name] = value
-		return nil // will be converted to int32
+		obj[name] = value // will be converted to int32
+		return nil
 	case arrow.DATE64:
-		obj[name] = value
-		return nil // will be converted to int64
+		obj[name] = value // will be converted to int64
+		return nil
 	case arrow.TIMESTAMP:
-		obj[name] = value
-		return nil // will be converted to int64
+		obj[name] = value // will be converted to int64
+		return nil
 	case arrow.TIME32:
-		obj[name] = value
-		return nil // will be converted to int32
+		obj[name] = value // will be converted to int32
+		return nil
 	case arrow.TIME64:
-		obj[name] = value
-		return nil // will be converted to int64
+		obj[name] = value // will be converted to int64
+		return nil
 	case arrow.INTERVAL:
-		obj[name] = value
-		return nil // will be converted to int32 when MonthInterval and {days,milliseconds} struct when DayTimeInterval
+		obj[name] = value // will be converted to int32 when MonthInterval and {days,milliseconds} struct when DayTimeInterval
+		return nil
 	case arrow.DECIMAL:
 		d128, ok := value.(decimal128.Num)
 		if !ok {
@@ -140,26 +139,26 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 		}
 		obj[name] = Signed128BitInteger{Lo: d128.LowBits(), Hi: d128.HighBits()}
 		return nil
-	case arrow.LIST:
-		panic("not implemented")
-	case arrow.STRUCT:
-		panic("not implemented")
-	case arrow.UNION:
-		panic("not implemented")
-	case arrow.DICTIONARY:
-		panic("not implemented")
-	case arrow.MAP:
-		panic("not implemented")
-	case arrow.EXTENSION:
-		panic("not implemented")
-	case arrow.FIXED_SIZE_LIST:
-		panic("not implemented")
+	// case arrow.LIST:
+	// 	panic("not implemented")
+	// case arrow.STRUCT:
+	// 	panic("not implemented")
+	// case arrow.UNION:
+	// 	panic("not implemented")
+	// case arrow.DICTIONARY:
+	// 	panic("not implemented")
+	// case arrow.MAP:
+	// 	panic("not implemented")
+	// case arrow.EXTENSION:
+	// 	panic("not implemented")
+	// case arrow.FIXED_SIZE_LIST:
+	// 	panic("not implemented")
 	case arrow.DURATION:
-		obj[name] = value
-		return nil // will be converted to int64
+		obj[name] = value // will be converted to int64
+		return nil
 	}
 
-	return fmt.Errorf("unknown type: %s", field.Type.Name())
+	return errors.Errorf("dataframe/json - type not implemented: %s", field.Type.Name())
 }
 
 type Signed128BitInteger struct {

@@ -77,7 +77,7 @@
     "name": "float16",
     "Type": "Float16",
     "QualifiedType": "float16.Num",
-    "NativeType": "float32",
+    "InternalType": "float32",
     "Default": "0",
     "Size": "2"
   },
@@ -134,5 +134,14 @@
     "InternalType": "int64",
     "Default": "0",
     "Size": "8"
+  },
+  {
+    "Name": "MonthInterval",
+    "name": "monthInterval",
+    "Type": "MonthInterval",
+    "QualifiedType": "arrow.MonthInterval",
+    "InternalType": "int32",
+    "Default": "0",
+    "Size": "4"
   }
 ]

@@ -5,6 +5,7 @@ import (
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/go-bullseye/bullseye"
+	"github.com/pkg/errors"
 )
 
 {{range .In}}
@@ -25,7 +26,7 @@ func New{{.Name}}Element(v interface{}) *{{.Name}}Element {
 func (e {{.Name}}Element) compare(r Element, f func(left, right {{or .QualifiedType .Type}}) bool) (bool, error) {
 	rE, ok := r.(*{{.Name}}Element)
 	if !ok {
-		return false, fmt.Errorf("cannot cast %v to {{.Name}}Element", r)
+		return false, errors.Errorf("cannot cast %v to {{.Name}}Element", r)
 	}
 
 	// When their nil status isn't the same, we can't compare them.
@@ -36,11 +37,11 @@ func (e {{.Name}}Element) compare(r Element, f func(left, right {{or .QualifiedT
 
 	lv, lok := e.v.({{or .QualifiedType .Type}})
 	if !lok {
-		return false, fmt.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", e.v)
+		return false, errors.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", e.v)
 	}
 	rv, rok := rE.v.({{or .QualifiedType .Type}})
 	if !rok {
-		return false, fmt.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", rE.v)
+		return false, errors.Errorf("cannot assert %v is a {{or .QualifiedType .Type}}", rE.v)
 	}
 
 	return f(lv, rv), nil

@@ -30,7 +30,7 @@ bench: $(GO_SOURCES)
 go-templates: bin/tmpl $(GO_COMPILED_TEMPLATES)
 
 %.gen.go: %.gen.go.tmpl
-	bin/tmpl -i -data=numeric.tmpldata $<
+	bin/tmpl -i -data=types.tmpldata $<
 
 fmt: $(SOURCES_NO_VENDOR)
 	goimports -w $^

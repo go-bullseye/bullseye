@@ -1834,3 +1834,117 @@ func (vr *Date64ValueIterator) Release() {
 		vr.values = nil
 	}
 }
+
+// MonthIntervalValueIterator is an iterator for reading an Arrow Column value by value.
+type MonthIntervalValueIterator struct {
+	refCount      int64
+	chunkIterator *MonthIntervalChunkIterator
+
+	// Things we need to maintain for the iterator
+	index  int                   // current value index
+	values []arrow.MonthInterval // current chunk values
+	ref    *array.MonthInterval  // the chunk reference
+	done   bool                  // there are no more elements for this iterator
+}
+
+// NewMonthIntervalValueIterator creates a new MonthIntervalValueIterator for reading an Arrow Column.
+func NewMonthIntervalValueIterator(col *array.Column) *MonthIntervalValueIterator {
+	// We need a ChunkIterator to read the chunks
+	chunkIterator := NewMonthIntervalChunkIterator(col)
+
+	return &MonthIntervalValueIterator{
+		refCount:      1,
+		chunkIterator: chunkIterator,
+
+		index:  0,
+		values: nil,
+	}
+}
+
+// Value will return the current value that the iterator is on and boolean value indicating if the value is actually null.
+func (vr *MonthIntervalValueIterator) Value() (arrow.MonthInterval, bool) {
+	return vr.values[vr.index], vr.ref.IsNull(vr.index)
+}
+
+// ValuePointer will return a pointer to the current value that the iterator is on. It will return nil if the value is actually null.
+func (vr *MonthIntervalValueIterator) ValuePointer() *arrow.MonthInterval {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return &vr.values[vr.index]
+}
+
+// ValueInterface returns the current value as an interface{}.
+func (vr *MonthIntervalValueIterator) ValueInterface() interface{} {
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
+	return vr.values[vr.index]
+}
+
+// Next moves the iterator to the next value. This will return false
+// when there are no more values.
+func (vr *MonthIntervalValueIterator) Next() bool {
+	if vr.done {
+		return false
+	}
+
+	// Move the index up
+	vr.index++
+
+	// Keep moving the chunk up until we get one with data
+	for vr.values == nil || vr.index >= len(vr.values) {
+		if !vr.nextChunk() {
+			// There were no more chunks with data in them
+			vr.done = true
+			return false
+		}
+	}
+
+	return true
+}
+
+func (vr *MonthIntervalValueIterator) nextChunk() bool {
+	// Advance the chunk until we get one with data in it or we are done
+	if !vr.chunkIterator.Next() {
+		// No more chunks
+		return false
+	}
+
+	// There was another chunk.
+	// We maintain the ref and the values because the ref is going to allow us to retain the memory.
+	ref := vr.chunkIterator.Chunk()
+	ref.Retain()
+
+	if vr.ref != nil {
+		vr.ref.Release()
+	}
+
+	vr.ref = ref
+	vr.values = vr.chunkIterator.ChunkValues()
+	vr.index = 0
+	return true
+}
+
+// Retain keeps a reference to the MonthIntervalValueIterator.
+func (vr *MonthIntervalValueIterator) Retain() {
+	atomic.AddInt64(&vr.refCount, 1)
+}
+
+// Release removes a reference to the MonthIntervalValueIterator.
+func (vr *MonthIntervalValueIterator) Release() {
+	refs := atomic.AddInt64(&vr.refCount, -1)
+	debug.Assert(refs >= 0, "too many releases")
+	if refs == 0 {
+		if vr.chunkIterator != nil {
+			vr.chunkIterator.Release()
+			vr.chunkIterator = nil
+		}
+
+		if vr.ref != nil {
+			vr.ref.Release()
+			vr.ref = nil
+		}
+		vr.values = nil
+	}
+}

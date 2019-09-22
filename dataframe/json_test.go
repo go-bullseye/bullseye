@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	toJSONResult = `{"col1-i32":1,"col2-f64":1,"col3-date32":1,"col3-date64":1,"col3-f16":1}
-{"col1-i32":2,"col2-f64":2,"col3-date32":2,"col3-date64":2,"col3-f16":2}
-{"col1-i32":3,"col2-f64":3,"col3-date32":3,"col3-date64":3,"col3-f16":3}
-{"col1-i32":4,"col2-f64":4,"col3-date32":4,"col3-date64":4,"col3-f16":4}
-{"col1-i32":5,"col2-f64":5,"col3-date32":5,"col3-date64":5,"col3-f16":5}
-{"col1-i32":6,"col2-f64":6,"col3-date32":6,"col3-date64":6,"col3-f16":6}
-{"col1-i32":7,"col2-f64":7,"col3-date32":7,"col3-date64":7,"col3-f16":7}
-{"col1-i32":8,"col2-f64":8,"col3-date32":8,"col3-date64":8,"col3-f16":8}
-{"col1-i32":null,"col2-f64":null,"col3-date32":null,"col3-date64":null,"col3-f16":null}
-{"col1-i32":10,"col2-f64":10,"col3-date32":10,"col3-date64":10,"col3-f16":10}
+	toJSONResult = `{"col1-i32":1,"col2-f64":1,"col3-f16":1,"col4-date32":1,"col5-date64":1,"col6-mitvl":1}
+{"col1-i32":2,"col2-f64":2,"col3-f16":2,"col4-date32":2,"col5-date64":2,"col6-mitvl":2}
+{"col1-i32":3,"col2-f64":3,"col3-f16":3,"col4-date32":3,"col5-date64":3,"col6-mitvl":3}
+{"col1-i32":4,"col2-f64":4,"col3-f16":4,"col4-date32":4,"col5-date64":4,"col6-mitvl":4}
+{"col1-i32":5,"col2-f64":5,"col3-f16":5,"col4-date32":5,"col5-date64":5,"col6-mitvl":5}
+{"col1-i32":6,"col2-f64":6,"col3-f16":6,"col4-date32":6,"col5-date64":6,"col6-mitvl":6}
+{"col1-i32":7,"col2-f64":7,"col3-f16":7,"col4-date32":7,"col5-date64":7,"col6-mitvl":7}
+{"col1-i32":8,"col2-f64":8,"col3-f16":8,"col4-date32":8,"col5-date64":8,"col6-mitvl":8}
+{"col1-i32":null,"col2-f64":null,"col3-f16":null,"col4-date32":null,"col5-date64":null,"col6-mitvl":null}
+{"col1-i32":10,"col2-f64":10,"col3-f16":10,"col4-date32":10,"col5-date64":10,"col6-mitvl":10}
 `
 )
 
@@ -41,8 +41,9 @@ func TestToJSON(t *testing.T) {
 			{Name: "col1-i32", Type: arrow.PrimitiveTypes.Int32},
 			{Name: "col2-f64", Type: arrow.PrimitiveTypes.Float64},
 			{Name: "col3-f16", Type: arrow.FixedWidthTypes.Float16},
-			{Name: "col3-date32", Type: arrow.PrimitiveTypes.Date32},
-			{Name: "col3-date64", Type: arrow.PrimitiveTypes.Date64},
+			{Name: "col4-date32", Type: arrow.PrimitiveTypes.Date32},
+			{Name: "col5-date64", Type: arrow.PrimitiveTypes.Date64},
+			{Name: "col6-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
 		},
 		nil,
 	)
@@ -66,6 +67,9 @@ func TestToJSON(t *testing.T) {
 
 	recordBuilder.Field(4).(*array.Date64Builder).AppendValues([]arrow.Date64{1, 2, 3, 4, 5, 6}, nil)
 	recordBuilder.Field(4).(*array.Date64Builder).AppendValues([]arrow.Date64{7, 8, 9, 10}, []bool{true, true, false, true})
+
+	recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{1, 2, 3, 4, 5, 6}, nil)
+	recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{7, 8, 9, 10}, []bool{true, true, false, true})
 
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()

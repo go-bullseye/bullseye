@@ -56,6 +56,8 @@ func NewValueIterator(column *array.Column) ValueIterator {
 		return NewBooleanValueIterator(column)
 	case *arrow.StringType:
 		return NewStringValueIterator(column)
+	case *arrow.MonthIntervalType:
+		return NewMonthIntervalValueIterator(column)
 
 	default:
 		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))
