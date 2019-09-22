@@ -3,8 +3,10 @@ package iterator
 import (
 	"sync/atomic"
 
-	"github.com/go-bullseye/bullseye/internal/debug"
+	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/float16"
+	"github.com/go-bullseye/bullseye/internal/debug"
 )
 
 {{range .In}}

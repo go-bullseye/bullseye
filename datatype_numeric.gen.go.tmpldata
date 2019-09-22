@@ -40,6 +40,11 @@
     "Size": 64
   },
   {
+    "Name": "Float16",
+    "Type": "float16",
+    "Size": 16
+  },
+  {
     "Name": "Float32",
     "Type": "float32",
     "Size": 32

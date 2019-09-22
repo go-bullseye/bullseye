@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/float16"
 	"github.com/go-bullseye/bullseye/iterator"
 )
 
@@ -49,6 +50,12 @@ func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface
 
 func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{}) error {
 	name := field.Name
+
+	if value == nil {
+		obj[name] = nil
+		return nil
+	}
+
 	switch field.Type.ID() {
 	case arrow.NULL:
 		obj[name] = nil
@@ -71,8 +78,7 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 	case arrow.INT64:
 		obj[name] = value
 	case arrow.FLOAT16:
-		// TODO(nickpoorman): Verify we don't need to do anything to this.
-		obj[name] = value
+		obj[name] = value.(float16.Num).Float32()
 	case arrow.FLOAT32:
 		obj[name] = value
 	case arrow.FLOAT64:

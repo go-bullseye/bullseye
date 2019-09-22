@@ -42,6 +42,8 @@ func NewValueIterator(column *array.Column) ValueIterator {
 		return NewUint32ValueIterator(column)
 	case *arrow.Uint64Type:
 		return NewUint64ValueIterator(column)
+	case *arrow.Float16Type:
+		return NewFloat16ValueIterator(column)
 	case *arrow.Float32Type:
 		return NewFloat32ValueIterator(column)
 	case *arrow.Float64Type:

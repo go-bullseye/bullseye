@@ -73,6 +73,15 @@
     "Size": "1"
   },
   {
+    "Name": "Float16",
+    "name": "float16",
+    "Type": "Float16",
+    "QualifiedType": "float16.Num",
+    "NativeType": "float32",
+    "Default": "0",
+    "Size": "2"
+  },
+  {
     "Name": "Timestamp",
     "name": "timestamp",
     "Type": "Timestamp",
