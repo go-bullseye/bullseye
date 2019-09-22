@@ -1,13 +1,17 @@
 package dataframe
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/decimal128"
 	"github.com/apache/arrow/go/arrow/float16"
 	"github.com/go-bullseye/bullseye/iterator"
+	"github.com/pkg/errors"
 )
 
 // ToJSON writes the DataFrame as JSON.
@@ -59,51 +63,83 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 	switch field.Type.ID() {
 	case arrow.NULL:
 		obj[name] = nil
+		return nil
 	case arrow.BOOL:
 		obj[name] = value
+		return nil
 	case arrow.UINT8:
 		obj[name] = value
+		return nil
 	case arrow.INT8:
 		obj[name] = value
+		return nil
 	case arrow.UINT16:
 		obj[name] = value
+		return nil
 	case arrow.INT16:
 		obj[name] = value
+		return nil
 	case arrow.UINT32:
 		obj[name] = value
+		return nil
 	case arrow.INT32:
 		obj[name] = value
+		return nil
 	case arrow.UINT64:
 		obj[name] = value
+		return nil
 	case arrow.INT64:
 		obj[name] = value
+		return nil
 	case arrow.FLOAT16:
 		obj[name] = value.(float16.Num).Float32()
+		return nil
 	case arrow.FLOAT32:
 		obj[name] = value
+		return nil
 	case arrow.FLOAT64:
 		obj[name] = value
+		return nil
 	case arrow.STRING:
 		obj[name] = value
+		return nil
 	case arrow.BINARY:
 		obj[name] = value
+		return nil
 	case arrow.FIXED_SIZE_BINARY:
-		panic("not implemented")
-		// TODO: Convert to string?
+		// TODO(nickpoorman): Verify this is correct....
+		dt := field.Type.(*arrow.FixedSizeBinaryType)
+		v := []byte(strings.ToUpper(hex.EncodeToString([]byte{value.(byte)})))
+		if len(v) != 2*dt.ByteWidth {
+			return errors.Errorf("arrjson: invalid hex-string length (got=%d, want=%d)", len(v), 2*dt.ByteWidth)
+		}
+		obj[name] = string(v) // re-convert as string to prevent json.Marshal from base64-encoding it.
+		return nil
 	case arrow.DATE32:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int32
 	case arrow.DATE64:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int64
 	case arrow.TIMESTAMP:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int64
 	case arrow.TIME32:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int32
 	case arrow.TIME64:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int64
 	case arrow.INTERVAL:
-		panic("not implemented")
+		obj[name] = value
+		return nil // will be converted to int32 when MonthInterval and {days,milliseconds} struct when DayTimeInterval
 	case arrow.DECIMAL:
-		panic("not implemented")
+		d128, ok := value.(decimal128.Num)
+		if !ok {
+			break
+		}
+		obj[name] = Signed128BitInteger{Lo: d128.LowBits(), Hi: d128.HighBits()}
+		return nil
 	case arrow.LIST:
 		panic("not implemented")
 	case arrow.STRUCT:
@@ -119,10 +155,14 @@ func fieldToJSON(obj map[string]interface{}, field arrow.Field, value interface{
 	case arrow.FIXED_SIZE_LIST:
 		panic("not implemented")
 	case arrow.DURATION:
-		panic("not implemented")
-	default:
-		panic(fmt.Sprintf("unknown type: %s", field.Type.Name()))
+		obj[name] = value
+		return nil // will be converted to int64
 	}
 
-	return nil
+	return fmt.Errorf("unknown type: %s", field.Type.Name())
+}
+
+type Signed128BitInteger struct {
+	Lo uint64 `json:"lo"` // low bits
+	Hi int64  `json:"hi"` // high bits
 }
