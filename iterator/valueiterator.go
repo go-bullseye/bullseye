@@ -64,6 +64,8 @@ func NewValueIterator(column *array.Column) ValueIterator {
 		return NewDecimal128ValueIterator(column)
 	case *arrow.DurationType:
 		return NewDurationValueIterator(column)
+	case *arrow.TimestampType:
+		return NewTimestampValueIterator(column)
 
 	default:
 		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))
