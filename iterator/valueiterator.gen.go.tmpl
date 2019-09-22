@@ -9,6 +9,35 @@ import (
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
 
+// ValueIterator is a generic iterator for scanning over values.
+type ValueIterator interface {
+	// ValueInterface returns the current value as an interface{}.
+	ValueInterface() interface{}
+
+	// Next moves the iterator to the next value. This will return false when there are no more values.
+	Next() bool
+
+	// Retain keeps a reference to the ValueIterator.
+	Retain()
+
+	// Release removes a reference to the ValueIterator.
+	Release()
+}
+
+// NewValueIterator creates a new generic ValueIterator.
+func NewValueIterator(column *array.Column) ValueIterator {
+	field := column.Field()
+	switch field.Type.(type) {
+	{{range .In}}
+	case *arrow.{{.Name}}Type:
+		return New{{.Name}}ValueIterator(column)
+	{{end}}
+
+	default:
+		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))
+	}
+}
+
 {{range .In}}
 // {{.Name}}ValueIterator is an iterator for reading an Arrow Column value by value.
 type {{.Name}}ValueIterator struct {

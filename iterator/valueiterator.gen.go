@@ -3,6 +3,7 @@
 package iterator
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
@@ -11,6 +12,91 @@ import (
 	"github.com/apache/arrow/go/arrow/float16"
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
+
+// ValueIterator is a generic iterator for scanning over values.
+type ValueIterator interface {
+	// ValueInterface returns the current value as an interface{}.
+	ValueInterface() interface{}
+
+	// Next moves the iterator to the next value. This will return false when there are no more values.
+	Next() bool
+
+	// Retain keeps a reference to the ValueIterator.
+	Retain()
+
+	// Release removes a reference to the ValueIterator.
+	Release()
+}
+
+// NewValueIterator creates a new generic ValueIterator.
+func NewValueIterator(column *array.Column) ValueIterator {
+	field := column.Field()
+	switch field.Type.(type) {
+
+	case *arrow.Int64Type:
+		return NewInt64ValueIterator(column)
+
+	case *arrow.Uint64Type:
+		return NewUint64ValueIterator(column)
+
+	case *arrow.Float64Type:
+		return NewFloat64ValueIterator(column)
+
+	case *arrow.Int32Type:
+		return NewInt32ValueIterator(column)
+
+	case *arrow.Uint32Type:
+		return NewUint32ValueIterator(column)
+
+	case *arrow.Float32Type:
+		return NewFloat32ValueIterator(column)
+
+	case *arrow.Int16Type:
+		return NewInt16ValueIterator(column)
+
+	case *arrow.Uint16Type:
+		return NewUint16ValueIterator(column)
+
+	case *arrow.Int8Type:
+		return NewInt8ValueIterator(column)
+
+	case *arrow.Uint8Type:
+		return NewUint8ValueIterator(column)
+
+	case *arrow.TimestampType:
+		return NewTimestampValueIterator(column)
+
+	case *arrow.Time32Type:
+		return NewTime32ValueIterator(column)
+
+	case *arrow.Time64Type:
+		return NewTime64ValueIterator(column)
+
+	case *arrow.Date32Type:
+		return NewDate32ValueIterator(column)
+
+	case *arrow.Date64Type:
+		return NewDate64ValueIterator(column)
+
+	case *arrow.DurationType:
+		return NewDurationValueIterator(column)
+
+	case *arrow.MonthIntervalType:
+		return NewMonthIntervalValueIterator(column)
+
+	case *arrow.Float16Type:
+		return NewFloat16ValueIterator(column)
+
+	case *arrow.Decimal128Type:
+		return NewDecimal128ValueIterator(column)
+
+	case *arrow.DayTimeIntervalType:
+		return NewDayTimeIntervalValueIterator(column)
+
+	default:
+		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))
+	}
+}
 
 // Int64ValueIterator is an iterator for reading an Arrow Column value by value.
 type Int64ValueIterator struct {
