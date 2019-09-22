@@ -2066,3 +2066,124 @@ func (e MonthIntervalElement) String() string {
 func (e MonthIntervalElement) IsNil() bool {
 	return e.v == nil
 }
+
+// DayTimeIntervalElement has logic to apply to this type.
+type DayTimeIntervalElement struct {
+	v interface{}
+}
+
+// NewDayTimeIntervalElement creates a new DayTimeIntervalElement logic wrapper
+// from the given value provided as v.
+func NewDayTimeIntervalElement(v interface{}) *DayTimeIntervalElement {
+	return &DayTimeIntervalElement{
+		v: v,
+	}
+}
+
+// compare takes the left and right elements and applies the comparator function to them.
+func (e DayTimeIntervalElement) compare(r Element, f func(left, right arrow.DayTimeInterval) bool) (bool, error) {
+	rE, ok := r.(*DayTimeIntervalElement)
+	if !ok {
+		return false, errors.Errorf("cannot cast %v to DayTimeIntervalElement", r)
+	}
+
+	// When their nil status isn't the same, we can't compare them.
+	// Explicit both nil should be handled elsewhere.
+	if e.IsNil() != rE.IsNil() {
+		return false, nil
+	}
+
+	lv, lok := e.v.(arrow.DayTimeInterval)
+	if !lok {
+		return false, errors.Errorf("cannot assert %v is a arrow.DayTimeInterval", e.v)
+	}
+	rv, rok := rE.v.(arrow.DayTimeInterval)
+	if !rok {
+		return false, errors.Errorf("cannot assert %v is a arrow.DayTimeInterval", rE.v)
+	}
+
+	return f(lv, rv), nil
+}
+
+// Comparation methods
+
+// Eq returns true if the left DayTimeIntervalElement is equal to the right DayTimeIntervalElement.
+// When both are nil Eq returns false because nil actualy signifies "unknown"
+// and you can't compare two things when you don't know what they are.
+func (e DayTimeIntervalElement) Eq(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return false, nil
+	}
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days == right.Days && left.Milliseconds == right.Milliseconds
+	})
+}
+
+// EqStrict returns true if the left DayTimeIntervalElement is equal to the right DayTimeIntervalElement.
+// When both are nil EqStrict returns true.
+func (e DayTimeIntervalElement) EqStrict(r Element) (bool, error) {
+	if e.IsNil() && r.IsNil() {
+		return true, nil
+	}
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days == right.Days && left.Milliseconds == right.Milliseconds
+	})
+}
+
+// Neq returns true if the left DayTimeIntervalElement
+// is not equal to the right DayTimeIntervalElement.
+func (e DayTimeIntervalElement) Neq(r Element) (bool, error) {
+	v, ok := e.Eq(r)
+	return !v, ok
+}
+
+// Less returns true if the left DayTimeIntervalElement
+// is less than the right DayTimeIntervalElement.
+func (e DayTimeIntervalElement) Less(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days < right.Days && left.Milliseconds < right.Milliseconds
+	})
+}
+
+// LessEq returns true if the left DayTimeIntervalElement
+// is less than or equal to the right DayTimeIntervalElement.
+func (e DayTimeIntervalElement) LessEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days <= right.Days && left.Milliseconds <= right.Milliseconds
+	})
+}
+
+// Greater returns true if the left DayTimeIntervalElement
+// is greter than the right DayTimeIntervalElement.
+func (e DayTimeIntervalElement) Greater(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days > right.Days && left.Milliseconds > right.Milliseconds
+	})
+}
+
+// GreaterEq returns true if the left DayTimeIntervalElement
+// is greter than or equal to the right DayTimeIntervalElement.
+func (e DayTimeIntervalElement) GreaterEq(r Element) (bool, error) {
+	return e.compare(r, func(left, right arrow.DayTimeInterval) bool {
+		return left.Days >= right.Days && left.Milliseconds >= right.Milliseconds
+	})
+}
+
+// Accessor/conversion methods
+
+// Copy returns a copy of this DayTimeIntervalElement.
+func (e DayTimeIntervalElement) Copy() Element {
+	return e
+}
+
+// String prints the value of this element as a string.
+func (e DayTimeIntervalElement) String() string {
+	return fmt.Sprintf("%v", e.v)
+}
+
+// Information methods
+
+// IsNil returns true when the underlying value is nil.
+func (e DayTimeIntervalElement) IsNil() bool {
+	return e.v == nil
+}

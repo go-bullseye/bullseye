@@ -79,7 +79,14 @@
     "QualifiedType": "float16.Num",
     "InternalType": "float32",
     "Default": "0",
-    "Size": "2"
+    "Size": "2",
+    "Compare": {
+      "Eq": "left.Uint16() == right.Uint16()",
+      "Less": "left.Uint16() < right.Uint16()",
+      "LessEq": "left.Uint16() <= right.Uint16()",
+      "Greater": "left.Uint16() > right.Uint16()",
+      "GreaterEq": "left.Uint16() >= right.Uint16()"
+    }
   },
   {
     "Name": "Timestamp",
@@ -143,5 +150,21 @@
     "InternalType": "int32",
     "Default": "0",
     "Size": "4"
+  },
+  {
+    "Name": "DayTimeInterval",
+    "name": "dayTimeInterval",
+    "Type": "DayTimeInterval",
+    "QualifiedType": "arrow.DayTimeInterval",
+    "InternalType": "arrow.DayTimeInterval",
+    "Default": "0",
+    "Size": "4",
+    "Compare": {
+      "Eq": "left.Days == right.Days && left.Milliseconds == right.Milliseconds",
+      "Less": "left.Days < right.Days && left.Milliseconds < right.Milliseconds",
+      "LessEq": "left.Days <= right.Days && left.Milliseconds <= right.Milliseconds",
+      "Greater": "left.Days > right.Days && left.Milliseconds > right.Milliseconds",
+      "GreaterEq": "left.Days >= right.Days && left.Milliseconds >= right.Milliseconds"
+    }
   }
 ]

@@ -57,8 +57,8 @@ func (e {{.Name}}Element) Eq(r Element) (bool, error) {
 		return false, nil
 	}
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() == right.Uint16()
+		{{- if .Compare.Eq }}
+		return {{.Compare.Eq}}
 		{{- else}}
 		return left == right
 		{{- end}}
@@ -72,8 +72,8 @@ func (e {{.Name}}Element) EqStrict(r Element) (bool, error) {
 		return true, nil
 	}
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() == right.Uint16()
+		{{- if .Compare.Eq }}
+		return {{.Compare.Eq}}
 		{{- else}}
 		return left == right
 		{{- end}}
@@ -91,8 +91,8 @@ func (e {{.Name}}Element) Neq(r Element) (bool, error) {
 // is less than the right {{.Name}}Element.
 func (e {{.Name}}Element) Less(r Element) (bool, error) {
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() < right.Uint16()
+		{{- if .Compare.Less }}
+		return {{.Compare.Less}}
 		{{- else}}
 		return left < right
 		{{- end}}
@@ -103,8 +103,8 @@ func (e {{.Name}}Element) Less(r Element) (bool, error) {
 // is less than or equal to the right {{.Name}}Element.
 func (e {{.Name}}Element) LessEq(r Element) (bool, error) {
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() <= right.Uint16()
+		{{- if .Compare.LessEq }}
+		return {{.Compare.LessEq}}
 		{{- else}}
 		return left <= right
 		{{- end}}
@@ -115,8 +115,8 @@ func (e {{.Name}}Element) LessEq(r Element) (bool, error) {
 // is greter than the right {{.Name}}Element.
 func (e {{.Name}}Element) Greater(r Element) (bool, error) {
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() > right.Uint16()
+		{{- if .Compare.Greater }}
+		return {{.Compare.Greater}}
 		{{- else}}
 		return left > right
 		{{- end}}
@@ -127,8 +127,8 @@ func (e {{.Name}}Element) Greater(r Element) (bool, error) {
 // is greter than or equal to the right {{.Name}}Element.
 func (e {{.Name}}Element) GreaterEq(r Element) (bool, error) {
 	return e.compare(r, func(left, right {{or .QualifiedType .Type}}) bool {
-		{{- if eq .Type "Float16"}}
-		return left.Uint16() >= right.Uint16()
+		{{- if .Compare.GreaterEq }}
+		return {{.Compare.GreaterEq}}
 		{{- else}}
 		return left >= right
 		{{- end}}

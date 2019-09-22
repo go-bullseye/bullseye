@@ -1729,3 +1729,106 @@ func (cr *MonthIntervalChunkIterator) Release() {
 		cr.dtype = nil
 	}
 }
+
+// DayTimeIntervalChunkIterator is an iterator for reading an Arrow Column value by value.
+type DayTimeIntervalChunkIterator struct {
+	refCount int64
+	col      *array.Column
+
+	// Things Chunked maintains. We're going to maintain it ourselves.
+	chunks []*array.DayTimeInterval // cache the chunks on this iterator
+	length int64                    // this isn't set right on Chunked so we won't rely on it there. Instead we keep the correct value here.
+	nulls  int64
+	dtype  arrow.DataType
+
+	// Things we need to maintain for the iterator
+	currentIndex int                    // current chunk
+	currentChunk *array.DayTimeInterval // current chunk
+}
+
+// NewDayTimeIntervalChunkIterator creates a new DayTimeIntervalChunkIterator for reading an Arrow Column.
+func NewDayTimeIntervalChunkIterator(col *array.Column) *DayTimeIntervalChunkIterator {
+	col.Retain()
+
+	// Chunked is not using the correct type to keep track of length so we have to recalculate it.
+	columnChunks := col.Data().Chunks()
+	chunks := make([]*array.DayTimeInterval, len(columnChunks))
+	var length int64
+	var nulls int64
+
+	for i, chunk := range columnChunks {
+		// Keep our own refs to chunks
+		chunks[i] = chunk.(*array.DayTimeInterval)
+		// Retain the chunk
+		chunks[i].Retain()
+
+		// Keep our own counters instead of Chunked's
+		length += int64(chunk.Len())
+		nulls += int64(chunk.NullN())
+	}
+
+	return &DayTimeIntervalChunkIterator{
+		refCount: 1,
+		col:      col,
+
+		chunks: chunks,
+		length: length,
+		nulls:  nulls,
+		dtype:  col.DataType(),
+
+		currentIndex: 0,
+		currentChunk: nil,
+	}
+}
+
+// Chunk will return the current chunk that the iterator is on.
+func (cr *DayTimeIntervalChunkIterator) Chunk() *array.DayTimeInterval { return cr.currentChunk }
+
+// ChunkValues returns the underlying []arrow.DayTimeInterval chunk values.
+// Keep in mind the []arrow.DayTimeInterval type might not be able
+// to account for nil values. You must check for those explicitly via the chunk.
+func (cr *DayTimeIntervalChunkIterator) ChunkValues() []arrow.DayTimeInterval {
+	return cr.Chunk().DayTimeIntervalValues()
+}
+
+// Next moves the iterator to the next chunk. This will return false
+// when there are no more chunks.
+func (cr *DayTimeIntervalChunkIterator) Next() bool {
+	if cr.currentIndex >= len(cr.chunks) {
+		return false
+	}
+
+	if cr.currentChunk != nil {
+		cr.currentChunk.Release()
+	}
+
+	cr.currentChunk = cr.chunks[cr.currentIndex]
+	cr.currentChunk.Retain()
+	cr.currentIndex++
+
+	return true
+}
+
+// Retain keeps a reference to the DayTimeIntervalChunkIterator
+func (cr *DayTimeIntervalChunkIterator) Retain() {
+	atomic.AddInt64(&cr.refCount, 1)
+}
+
+// Release removes a reference to the DayTimeIntervalChunkIterator
+func (cr *DayTimeIntervalChunkIterator) Release() {
+	debug.Assert(atomic.LoadInt64(&cr.refCount) > 0, "too many releases")
+	ref := atomic.AddInt64(&cr.refCount, -1)
+	if ref == 0 {
+		cr.col.Release()
+		for i := range cr.chunks {
+			cr.chunks[i].Release()
+		}
+		if cr.currentChunk != nil {
+			cr.currentChunk.Release()
+			cr.currentChunk = nil
+		}
+		cr.col = nil
+		cr.chunks = nil
+		cr.dtype = nil
+	}
+}

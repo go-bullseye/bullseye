@@ -44,6 +44,7 @@ func TestToJSON(t *testing.T) {
 			{Name: "col4-date32", Type: arrow.PrimitiveTypes.Date32},
 			{Name: "col5-date64", Type: arrow.PrimitiveTypes.Date64},
 			{Name: "col6-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
+			{Name: "col7-dtitvl", Type: arrow.FixedWidthTypes.DayTimeInterval},
 		},
 		nil,
 	)
@@ -51,8 +52,9 @@ func TestToJSON(t *testing.T) {
 	recordBuilder := array.NewRecordBuilder(pool, schema)
 	defer recordBuilder.Release()
 
-	valid := []bool{true, true, true, true, true, true, true, true, false, true}
+	valids := []bool{true, true, true, true, true, true, true, true, false, true}
 	float16Values := f16sFrom([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	dayTimeIntervalValues := []arrow.DayTimeInterval{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10}}
 
 	recordBuilder.Field(0).(*array.Int32Builder).AppendValues([]int32{1, 2, 3, 4, 5, 6}, nil)
 	recordBuilder.Field(0).(*array.Int32Builder).AppendValues([]int32{7, 8, 9, 10}, []bool{true, true, false, true})
@@ -60,7 +62,7 @@ func TestToJSON(t *testing.T) {
 	recordBuilder.Field(1).(*array.Float64Builder).AppendValues([]float64{1, 2, 3, 4, 5, 6}, nil)
 	recordBuilder.Field(1).(*array.Float64Builder).AppendValues([]float64{7, 8, 9, 10}, []bool{true, true, false, true})
 
-	recordBuilder.Field(2).(*array.Float16Builder).AppendValues(float16Values, valid)
+	recordBuilder.Field(2).(*array.Float16Builder).AppendValues(float16Values, valids)
 
 	recordBuilder.Field(3).(*array.Date32Builder).AppendValues([]arrow.Date32{1, 2, 3, 4, 5, 6}, nil)
 	recordBuilder.Field(3).(*array.Date32Builder).AppendValues([]arrow.Date32{7, 8, 9, 10}, []bool{true, true, false, true})
@@ -70,6 +72,8 @@ func TestToJSON(t *testing.T) {
 
 	recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{1, 2, 3, 4, 5, 6}, nil)
 	recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{7, 8, 9, 10}, []bool{true, true, false, true})
+
+	recordBuilder.Field(6).(*array.DayTimeIntervalBuilder).AppendValues(dayTimeIntervalValues, valids)
 
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()
