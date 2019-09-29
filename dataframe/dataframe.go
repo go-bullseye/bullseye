@@ -50,8 +50,8 @@ func NewDataFrame(mem memory.Allocator, schema *arrow.Schema, arrs []array.Inter
 
 	for i, arr := range arrs {
 		ft := df.schema.Field(i)
-		if arr.DataType() != ft.Type {
-			return nil, errors.Errorf("dataframe: column %q is inconsitent with schema", ft.Name)
+		if fmt.Sprintf("%s", arr.DataType()) != fmt.Sprintf("%s", ft.Type) {
+			return nil, errors.Errorf("dataframe: column %q is inconsitent with schema (%s != %s)", ft.Name, arr.DataType(), ft.Type)
 		}
 
 		if int64(arr.Len()) < df.rows {

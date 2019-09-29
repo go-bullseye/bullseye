@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/apache/arrow/go/arrow"
@@ -49,9 +50,13 @@ func TestToJSON(t *testing.T) {
 			{Name: "col8-dec128", Type: &arrow.Decimal128Type{Precision: 10, Scale: 1}},
 			{Name: "col9-duration-s", Type: arrow.FixedWidthTypes.Duration_s},
 			{Name: "col10-ts-s", Type: arrow.FixedWidthTypes.Timestamp_s},
+			{Name: "col11-list", Type: arrow.ListOf(arrow.PrimitiveTypes.Int64)},
 		},
 		nil,
 	)
+
+	// print the schema
+	fmt.Println(schema.String())
 
 	recordBuilder := array.NewRecordBuilder(pool, schema)
 	defer recordBuilder.Release()
@@ -82,6 +87,12 @@ func TestToJSON(t *testing.T) {
 	recordBuilder.Field(8).(*array.DurationBuilder).AppendValues([]arrow.Duration{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, valids)
 
 	recordBuilder.Field(9).(*array.TimestampBuilder).AppendValues([]arrow.Timestamp{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, valids)
+
+	lb := recordBuilder.Field(10).(*array.ListBuilder)
+	for _, v := range valids {
+		lb.Append(v)
+		lb.ValueBuilder().(*array.Int64Builder).AppendValues([]int64{1, 2, 3, 4, 5}, nil)
+	}
 
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()
