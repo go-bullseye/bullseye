@@ -32,6 +32,14 @@ func NewValueIterator(column *array.Column) ValueIterator {
 	case *arrow.{{.Name}}Type:
 		return New{{.Name}}ValueIterator(column)
 	{{end}}
+	case *arrow.BooleanType:
+		return NewBooleanValueIterator(column)
+
+	case *arrow.StringType:
+		return NewStringValueIterator(column)
+		
+	case *arrow.ListType:
+		return NewListValueIterator(column)
 
 	default:
 		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))

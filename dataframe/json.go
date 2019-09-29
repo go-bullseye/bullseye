@@ -19,7 +19,7 @@ import (
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
 
-	// To be efficient we want to extract one row at a time
+	// Extract one row at a time
 	it := iterator.NewStepIteratorForColumns(df.Columns())
 	defer it.Release()
 
@@ -98,6 +98,7 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		if !ok {
 			return nil, errors.Errorf("dataframe/json could not convert value to list")
 		}
+		defer valueList.Release()
 		list, err := arrayToJSON(dtype.(*arrow.ListType).Elem(), valueList)
 		if err != nil {
 			return nil, err
@@ -162,23 +163,20 @@ func arrayToJSON(elmDtype arrow.DataType, arr array.Interface) (res []interface{
 	case *array.String:
 		res = strToJSON(arr)
 
-	// case *array.Binary:
-	// 	return Array{
-	// 		Name:   elmDtype.Name,
-	// 		Count:  arr.Len(),
-	// 		Data:   bytesToJSON(arr),
-	// 		Valids: validsToJSON(arr),
-	// 		Offset: arr.ValueOffsets(),
-	// 	}
+	case *array.Binary:
+		bytesToJSON(arr)
 
 	case *array.List:
 		res, err = arrayToJSON(arr.DataType().(*arrow.ListType).Elem(), arr.ListValues())
 
-	// case *array.FixedSizeList:
+	case *array.FixedSizeList:
+		panic("*array.FixedSizeList not implemented")
 
-	// case *array.Struct:
+	case *array.Struct:
+		panic("*array.Struct not implemented")
 
 	case *array.FixedSizeBinary:
+		panic("*array.FixedSizeBinary not implemented")
 
 	case *array.Date32:
 		res = date32ToJSON(arr)

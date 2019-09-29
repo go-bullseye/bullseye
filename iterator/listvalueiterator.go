@@ -3,44 +3,48 @@ package iterator
 import (
 	"sync/atomic"
 
-	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
 
-type CollectionIterator struct {
+// ListValueIterator iterates over the list elements.
+// For example, in a list like: [[0 1 2] (null) [3 4 5] [6 7 8] (null)]
+// First [0 1 2] would be returned, then (null), then [3 4 5], etc..
+type ListValueIterator struct {
 	refCount      int64
 	chunkIterator *ChunkIterator
 
 	// Things we need to maintain for the iterator
-	index   int             // current value index
-	ref     array.Interface // the chunk reference
-	done    bool            // there are no more elements for this iterator
-	elmType arrow.DataType
+	index int         // current value index
+	ref   *array.List // the chunk reference
+	done  bool        // there are no more elements for this iterator
 }
 
-func NewCollectionIterator(col *array.Column, elmType arrow.DataType) *CollectionIterator {
+func NewListValueIterator(col *array.Column) *ListValueIterator {
 	// We need a ChunkIterator to read the chunks
 	chunkIterator := NewChunkIterator(col)
 
-	return &CollectionIterator{
+	return &ListValueIterator{
 		refCount:      1,
 		chunkIterator: chunkIterator,
 
-		index:   0,
-		ref:     nil,
-		elmType: elmType,
+		index: 0,
+		ref:   nil,
 	}
 }
 
-func (vr *CollectionIterator) ValueInterface() interface{} {
+func (vr *ListValueIterator) ValueInterface() interface{} {
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
-	return vr.ref
+	j := vr.index + vr.ref.Offset() // index + data offset
+	offsets := vr.ref.Offsets()
+	beg := int64(offsets[j])
+	end := int64(offsets[j+1])
+	return array.NewSlice(vr.ref.ListValues(), beg, end)
 }
 
-func (vr *CollectionIterator) Next() bool {
+func (vr *ListValueIterator) Next() bool {
 	if vr.done {
 		return false
 	}
@@ -60,7 +64,7 @@ func (vr *CollectionIterator) Next() bool {
 	return true
 }
 
-func (vr *CollectionIterator) nextChunk() bool {
+func (vr *ListValueIterator) nextChunk() bool {
 	// Advance the chunk until we get one with data in it or we are done
 	if !vr.chunkIterator.Next() {
 		// No more chunks
@@ -76,18 +80,18 @@ func (vr *CollectionIterator) nextChunk() bool {
 		vr.ref.Release()
 	}
 
-	vr.ref = ref
+	vr.ref = ref.(*array.List)
 	vr.index = 0
 	return true
 }
 
-// Retain keeps a reference to the CollectionIterator
-func (vr *CollectionIterator) Retain() {
+// Retain keeps a reference to the ListValueIterator
+func (vr *ListValueIterator) Retain() {
 	atomic.AddInt64(&vr.refCount, 1)
 }
 
-// Release removes a reference to the CollectionIterator
-func (vr *CollectionIterator) Release() {
+// Release removes a reference to the ListValueIterator
+func (vr *ListValueIterator) Release() {
 	debug.Assert(atomic.LoadInt64(&vr.refCount) > 0, "too many releases")
 
 	if atomic.AddInt64(&vr.refCount, -1) == 0 {

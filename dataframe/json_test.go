@@ -13,16 +13,16 @@ import (
 )
 
 const (
-	toJSONResult = `{"col1-i32":1,"col10-ts-s":1,"col2-f64":1,"col3-f16":1,"col4-date32":1,"col5-date64":1,"col6-mitvl":1,"col7-dtitvl":{"days":1,"milliseconds":1},"col8-dec128":{"lo":1,"hi":1},"col9-duration-s":1}
-{"col1-i32":2,"col10-ts-s":2,"col2-f64":2,"col3-f16":2,"col4-date32":2,"col5-date64":2,"col6-mitvl":2,"col7-dtitvl":{"days":2,"milliseconds":2},"col8-dec128":{"lo":2,"hi":2},"col9-duration-s":2}
-{"col1-i32":3,"col10-ts-s":3,"col2-f64":3,"col3-f16":3,"col4-date32":3,"col5-date64":3,"col6-mitvl":3,"col7-dtitvl":{"days":3,"milliseconds":3},"col8-dec128":{"lo":3,"hi":3},"col9-duration-s":3}
-{"col1-i32":4,"col10-ts-s":4,"col2-f64":4,"col3-f16":4,"col4-date32":4,"col5-date64":4,"col6-mitvl":4,"col7-dtitvl":{"days":4,"milliseconds":4},"col8-dec128":{"lo":0,"hi":0},"col9-duration-s":4}
-{"col1-i32":5,"col10-ts-s":5,"col2-f64":5,"col3-f16":5,"col4-date32":5,"col5-date64":5,"col6-mitvl":5,"col7-dtitvl":{"days":5,"milliseconds":5},"col8-dec128":{"lo":18446744073709551611,"hi":-1},"col9-duration-s":5}
-{"col1-i32":6,"col10-ts-s":6,"col2-f64":6,"col3-f16":6,"col4-date32":6,"col5-date64":6,"col6-mitvl":6,"col7-dtitvl":{"days":6,"milliseconds":6},"col8-dec128":{"lo":18446744073709551610,"hi":-1},"col9-duration-s":6}
-{"col1-i32":7,"col10-ts-s":7,"col2-f64":7,"col3-f16":7,"col4-date32":7,"col5-date64":7,"col6-mitvl":7,"col7-dtitvl":{"days":7,"milliseconds":7},"col8-dec128":{"lo":7,"hi":0},"col9-duration-s":7}
-{"col1-i32":8,"col10-ts-s":8,"col2-f64":8,"col3-f16":8,"col4-date32":8,"col5-date64":8,"col6-mitvl":8,"col7-dtitvl":{"days":8,"milliseconds":8},"col8-dec128":{"lo":8,"hi":0},"col9-duration-s":8}
-{"col1-i32":null,"col10-ts-s":null,"col2-f64":null,"col3-f16":null,"col4-date32":null,"col5-date64":null,"col6-mitvl":null,"col7-dtitvl":null,"col8-dec128":null,"col9-duration-s":null}
-{"col1-i32":10,"col10-ts-s":10,"col2-f64":10,"col3-f16":10,"col4-date32":10,"col5-date64":10,"col6-mitvl":10,"col7-dtitvl":{"days":10,"milliseconds":10},"col8-dec128":{"lo":10,"hi":0},"col9-duration-s":10}
+	toJSONResult = `{"col0-i32":1,"col1-f64":1,"col10-bool":true,"col11-string":"a","col12-list":["0:0","0:1","0:2","0:3","0:4"],"col2-f16":1,"col3-date32":1,"col4-date64":1,"col5-mitvl":1,"col6-dtitvl":{"days":1,"milliseconds":1},"col7-dec128":{"lo":1,"hi":1},"col8-duration-s":1,"col9-ts-s":1}
+{"col0-i32":2,"col1-f64":2,"col10-bool":false,"col11-string":"b","col12-list":["1:0","1:1","1:2","1:3","1:4"],"col2-f16":2,"col3-date32":2,"col4-date64":2,"col5-mitvl":2,"col6-dtitvl":{"days":2,"milliseconds":2},"col7-dec128":{"lo":2,"hi":2},"col8-duration-s":2,"col9-ts-s":2}
+{"col0-i32":3,"col1-f64":3,"col10-bool":true,"col11-string":"c","col12-list":["2:0","2:1","2:2","2:3","2:4"],"col2-f16":3,"col3-date32":3,"col4-date64":3,"col5-mitvl":3,"col6-dtitvl":{"days":3,"milliseconds":3},"col7-dec128":{"lo":3,"hi":3},"col8-duration-s":3,"col9-ts-s":3}
+{"col0-i32":4,"col1-f64":4,"col10-bool":false,"col11-string":"d","col12-list":["3:0","3:1","3:2","3:3","3:4"],"col2-f16":4,"col3-date32":4,"col4-date64":4,"col5-mitvl":4,"col6-dtitvl":{"days":4,"milliseconds":4},"col7-dec128":{"lo":0,"hi":0},"col8-duration-s":4,"col9-ts-s":4}
+{"col0-i32":5,"col1-f64":5,"col10-bool":true,"col11-string":"e","col12-list":["4:0","4:1","4:2","4:3","4:4"],"col2-f16":5,"col3-date32":5,"col4-date64":5,"col5-mitvl":5,"col6-dtitvl":{"days":5,"milliseconds":5},"col7-dec128":{"lo":18446744073709551611,"hi":-1},"col8-duration-s":5,"col9-ts-s":5}
+{"col0-i32":6,"col1-f64":6,"col10-bool":false,"col11-string":"f","col12-list":["5:0","5:1","5:2","5:3","5:4"],"col2-f16":6,"col3-date32":6,"col4-date64":6,"col5-mitvl":6,"col6-dtitvl":{"days":6,"milliseconds":6},"col7-dec128":{"lo":18446744073709551610,"hi":-1},"col8-duration-s":6,"col9-ts-s":6}
+{"col0-i32":7,"col1-f64":7,"col10-bool":true,"col11-string":"g","col12-list":["6:0","6:1","6:2","6:3","6:4"],"col2-f16":7,"col3-date32":7,"col4-date64":7,"col5-mitvl":7,"col6-dtitvl":{"days":7,"milliseconds":7},"col7-dec128":{"lo":7,"hi":0},"col8-duration-s":7,"col9-ts-s":7}
+{"col0-i32":8,"col1-f64":8,"col10-bool":false,"col11-string":"h","col12-list":["7:0","7:1","7:2","7:3","7:4"],"col2-f16":8,"col3-date32":8,"col4-date64":8,"col5-mitvl":8,"col6-dtitvl":{"days":8,"milliseconds":8},"col7-dec128":{"lo":8,"hi":0},"col8-duration-s":8,"col9-ts-s":8}
+{"col0-i32":null,"col1-f64":null,"col10-bool":null,"col11-string":null,"col12-list":null,"col2-f16":null,"col3-date32":null,"col4-date64":null,"col5-mitvl":null,"col6-dtitvl":null,"col7-dec128":null,"col8-duration-s":null,"col9-ts-s":null}
+{"col0-i32":10,"col1-f64":10,"col10-bool":false,"col11-string":"j","col12-list":["9:0","9:1","9:2","9:3","9:4"],"col2-f16":10,"col3-date32":10,"col4-date64":10,"col5-mitvl":10,"col6-dtitvl":{"days":10,"milliseconds":10},"col7-dec128":{"lo":10,"hi":0},"col8-duration-s":10,"col9-ts-s":10}
 `
 )
 
@@ -40,23 +40,25 @@ func TestToJSON(t *testing.T) {
 
 	schema := arrow.NewSchema(
 		[]arrow.Field{
-			{Name: "col1-i32", Type: arrow.PrimitiveTypes.Int32},
-			{Name: "col2-f64", Type: arrow.PrimitiveTypes.Float64},
-			{Name: "col3-f16", Type: arrow.FixedWidthTypes.Float16},
-			{Name: "col4-date32", Type: arrow.PrimitiveTypes.Date32},
-			{Name: "col5-date64", Type: arrow.PrimitiveTypes.Date64},
-			{Name: "col6-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
-			{Name: "col7-dtitvl", Type: arrow.FixedWidthTypes.DayTimeInterval},
-			{Name: "col8-dec128", Type: &arrow.Decimal128Type{Precision: 10, Scale: 1}},
-			{Name: "col9-duration-s", Type: arrow.FixedWidthTypes.Duration_s},
-			{Name: "col10-ts-s", Type: arrow.FixedWidthTypes.Timestamp_s},
-			{Name: "col11-list", Type: arrow.ListOf(arrow.PrimitiveTypes.Int64)},
+			{Name: "col0-i32", Type: arrow.PrimitiveTypes.Int32},
+			{Name: "col1-f64", Type: arrow.PrimitiveTypes.Float64},
+			{Name: "col2-f16", Type: arrow.FixedWidthTypes.Float16},
+			{Name: "col3-date32", Type: arrow.PrimitiveTypes.Date32},
+			{Name: "col4-date64", Type: arrow.PrimitiveTypes.Date64},
+			{Name: "col5-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
+			{Name: "col6-dtitvl", Type: arrow.FixedWidthTypes.DayTimeInterval},
+			{Name: "col7-dec128", Type: &arrow.Decimal128Type{Precision: 10, Scale: 1}},
+			{Name: "col8-duration-s", Type: arrow.FixedWidthTypes.Duration_s},
+			{Name: "col9-ts-s", Type: arrow.FixedWidthTypes.Timestamp_s},
+			{Name: "col10-bool", Type: arrow.FixedWidthTypes.Boolean},
+			{Name: "col11-string", Type: arrow.BinaryTypes.String},
+			{Name: "col12-list", Type: arrow.ListOf(arrow.BinaryTypes.String)},
 		},
 		nil,
 	)
 
 	// print the schema
-	fmt.Println(schema.String())
+	// fmt.Println(schema.String())
 
 	recordBuilder := array.NewRecordBuilder(pool, schema)
 	defer recordBuilder.Release()
@@ -88,10 +90,18 @@ func TestToJSON(t *testing.T) {
 
 	recordBuilder.Field(9).(*array.TimestampBuilder).AppendValues([]arrow.Timestamp{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, valids)
 
-	lb := recordBuilder.Field(10).(*array.ListBuilder)
-	for _, v := range valids {
+	recordBuilder.Field(10).(*array.BooleanBuilder).AppendValues([]bool{true, false, true, false, true, false, true, false, true, false}, valids)
+
+	recordBuilder.Field(11).(*array.StringBuilder).AppendValues([]string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}, valids)
+
+	lb := recordBuilder.Field(12).(*array.ListBuilder)
+	vb := lb.ValueBuilder().(*array.StringBuilder)
+	for i, v := range valids {
 		lb.Append(v)
-		lb.ValueBuilder().(*array.Int64Builder).AppendValues([]int64{1, 2, 3, 4, 5}, nil)
+		ilist := make([]string, 5)
+		for j := range ilist {
+			vb.Append(fmt.Sprintf("%d:%d", i, j))
+		}
 	}
 
 	rec1 := recordBuilder.NewRecord()
