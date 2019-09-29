@@ -15,7 +15,6 @@ import (
 )
 
 // ToJSON writes the DataFrame as JSON.
-// TODO(nickpoorman): Take a chunk size to break across files.
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
 
