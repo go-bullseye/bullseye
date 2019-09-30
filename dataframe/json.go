@@ -27,7 +27,7 @@ func (df *DataFrame) ToJSON(w io.Writer) error {
 
 	for it.Next() {
 		stepValue := it.Values()
-		jsonObj, err := rowToJSON(schema, stepValue.Values)
+		jsonObj, err := rowToJSON(schema, stepValue) //stepValue.Values)
 		if err != nil {
 			return err
 		}
@@ -40,13 +40,18 @@ func (df *DataFrame) ToJSON(w io.Writer) error {
 	return nil
 }
 
-func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface{}, error) {
+// func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface{}, error) {
+func rowToJSON(schema *arrow.Schema, stepValue *iterator.StepValue) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
 	fields := schema.Fields()
 	for i, field := range fields {
-		value, err := rowElementToJSON(field.Type, values[i])
-		if err != nil {
-			return nil, err
+		var value interface{}
+		var err error
+		if stepValue.Exists[i] {
+			value, err = rowElementToJSON(field.Type, stepValue.Values[i])
+			if err != nil {
+				return nil, err
+			}
 		}
 		obj[field.Name] = value
 	}
@@ -55,7 +60,6 @@ func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface
 
 func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, error) {
 	if value == nil {
-		fmt.Printf("field: %s | value is nil\n", dtype.Name())
 		return nil, nil
 	}
 
@@ -107,23 +111,19 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		}
 		return list, nil
 	case arrow.STRUCT:
-		fmt.Println("inside struct type")
 		valueList, ok := value.([]iterator.ValueIterator)
 		if !ok {
 			return nil, errors.Errorf("dataframe/json could not convert value to interface")
 		}
-
 		dt := dtype.(*arrow.StructType)
 		o := make(map[string]interface{})
 		for i, field := range dt.Fields() {
 			vi := valueList[i].ValueInterface()
-			fmt.Println("vi: ", vi)
-			// Iterate over each value
-			// for it.Next()
 			elVal, err := rowElementToJSON(field.Type, vi)
 			if err != nil {
 				return nil, err
 			}
+			fmt.Printf("Adding field %s = %v\n", field.Name, elVal)
 			o[field.Name] = elVal
 		}
 		return o, nil

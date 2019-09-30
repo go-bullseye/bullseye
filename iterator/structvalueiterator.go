@@ -1,7 +1,6 @@
 package iterator
 
 import (
-	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
@@ -17,9 +16,9 @@ type StructValueIterator struct {
 	chunkIterator *ChunkIterator
 
 	// Things we need to maintain for the iterator
-	// index int           // current field level value index
-	ref  *array.Struct // the chunk reference
-	done bool          // there are no more elements for this iterator
+	index int           // current field level value index
+	ref   *array.Struct // the chunk reference
+	done  bool          // there are no more elements for this iterator
 
 	// We need iterators for each field
 	fieldIterators []ValueIterator
@@ -33,51 +32,21 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 		refCount:      1,
 		chunkIterator: chunkIterator,
 
-		// index: 0,
-		ref: nil,
+		index: -1,
+		ref:   nil,
 	}
 }
 
 // For this we return []ValueIterators so the user can do what they want with them.
 func (vr *StructValueIterator) ValueInterface() interface{} {
-	fmt.Println("StructValueIterator/called ValueInterface")
-	// if vr.ref.IsNull(vr.index) {
-	// 	return nil
-	// }
-
-	// dtype := vr.ref.DataType().(*arrow.StructType)
-
-	// Take the slice like we did for List for each of the types
-	// for i, field := range dtype.Fields() {
-	// 	arr := vr.ref.Field(i)
-	// 	j := vr.index + arr.Data().Offset()
-
-	// }
-
-	// o := make(map[string]interface{})
-	// for i := range vr.fieldIterators {
-	// 	o[dtype.Field(i).Name] = vr.ValueInterface()
-	// }
-
-	// Take a subset of each of the fields
-	// fields := make([]array.Interface, vr.ref.NumField())
-	// for i := range fields {
-	// 	arr := vr.ref.Field(i)
-	// 	j := vr.index + arr.Data().Offset()
-	// }
-
-	// j := vr.index + vr.ref.Offset() // index + data offset
-	//
-	// // return a.values[a.offsets[i]:a.offsets[i+1]]
-	// array.NewSlice(vr.ref, i, j)
-	// return o
-	// return vr.ref
+	if vr.ref.IsNull(vr.index) {
+		return nil
+	}
 
 	return vr.fieldIterators
 }
 
 func (vr *StructValueIterator) Next() bool {
-	fmt.Println("StructValueIterator/called Next")
 	if vr.done {
 		return false
 	}
@@ -95,18 +64,16 @@ func (vr *StructValueIterator) Next() bool {
 }
 
 func (vr *StructValueIterator) advanceFieldIterators() bool {
+	vr.index++
 	allItersDone := true
-	fmt.Println("vr.fieldIterators: ", len(vr.fieldIterators))
 	for i := range vr.fieldIterators {
 		itHasMore := vr.fieldIterators[i].Next()
 		allItersDone = allItersDone && !itHasMore
 	}
-	fmt.Println("StructValueIterator/called advanceFieldIterators: ", allItersDone)
 	return allItersDone
 }
 
 func (vr *StructValueIterator) nextChunk() bool {
-	fmt.Println("StructValueIterator/called nextChunk")
 	// Advance the chunk until we get one with data in it or we are done
 	if !vr.chunkIterator.Next() {
 		// No more chunks
@@ -129,7 +96,7 @@ func (vr *StructValueIterator) nextChunk() bool {
 	}
 
 	vr.ref = ref.(*array.Struct)
-	// vr.index = 0
+	vr.index = -1
 
 	dtype := vr.ref.DataType().(*arrow.StructType)
 
