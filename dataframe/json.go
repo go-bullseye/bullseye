@@ -26,7 +26,7 @@ func (df *DataFrame) ToJSON(w io.Writer) error {
 
 	for it.Next() {
 		stepValue := it.Values()
-		jsonObj, err := rowToJSON(schema, stepValue) //stepValue.Values)
+		jsonObj, err := rowToJSON(schema, stepValue)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,6 @@ func (df *DataFrame) ToJSON(w io.Writer) error {
 	return nil
 }
 
-// func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface{}, error) {
 func rowToJSON(schema *arrow.Schema, stepValue *iterator.StepValue) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
 	fields := schema.Fields()
@@ -143,8 +142,6 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 
 	return nil, errors.Errorf("dataframe/json - type not implemented: %s", dtype.Name())
 }
-
-// func structToJSON(arr array.Interface)
 
 func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 	switch arr := arr.(type) {
