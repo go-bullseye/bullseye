@@ -3,6 +3,7 @@ package dataframe
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -54,6 +55,7 @@ func rowToJSON(schema *arrow.Schema, values []interface{}) (map[string]interface
 
 func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, error) {
 	if value == nil {
+		fmt.Printf("field: %s | value is nil\n", dtype.Name())
 		return nil, nil
 	}
 
@@ -95,33 +97,58 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 	case arrow.LIST:
 		valueList, ok := value.(array.Interface)
 		if !ok {
-			return nil, errors.Errorf("dataframe/json could not convert value to list")
+			return nil, errors.Errorf("dataframe/json could not convert value to interface")
 		}
+
 		defer valueList.Release()
-		list, err := arrayToJSON(dtype.(*arrow.ListType).Elem(), valueList)
+		list, err := interfaceToJSON(valueList)
 		if err != nil {
 			return nil, err
 		}
 		return list, nil
+	case arrow.STRUCT:
+		fmt.Println("inside struct type")
+		valueList, ok := value.([]iterator.ValueIterator)
+		if !ok {
+			return nil, errors.Errorf("dataframe/json could not convert value to interface")
+		}
 
-		// case arrow.STRUCT:
-		// 	panic("not implemented")
-		// case arrow.UNION:
-		// 	panic("not implemented")
-		// case arrow.DICTIONARY:
-		// 	panic("not implemented")
-		// case arrow.MAP:
-		// 	panic("not implemented")
-		// case arrow.EXTENSION:
-		// 	panic("not implemented")
-		// case arrow.FIXED_SIZE_LIST:
-		// 	panic("not implemented")
+		dt := dtype.(*arrow.StructType)
+		o := make(map[string]interface{})
+		for i, field := range dt.Fields() {
+			vi := valueList[i].ValueInterface()
+			fmt.Println("vi: ", vi)
+			// Iterate over each value
+			// for it.Next()
+			elVal, err := rowElementToJSON(field.Type, vi)
+			if err != nil {
+				return nil, err
+			}
+			o[field.Name] = elVal
+		}
+		return o, nil
+
+	// case arrow.UNION:
+	// 	panic("not implemented")
+	// case arrow.DICTIONARY:
+	// 	panic("not implemented")
+	// case arrow.MAP:
+	// 	panic("not implemented")
+	// case arrow.EXTENSION:
+	// 	panic("not implemented")
+	// case arrow.FIXED_SIZE_LIST:
+	// 	panic("not implemented")
+
+	default:
+		panic("type not implemented")
 	}
 
 	return nil, errors.Errorf("dataframe/json - type not implemented: %s", dtype.Name())
 }
 
-func arrayToJSON(elmDtype arrow.DataType, arr array.Interface) (res []interface{}, err error) {
+// func structToJSON(arr array.Interface)
+
+func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 	switch arr := arr.(type) {
 	case *array.Boolean:
 		res = boolsToJSON(arr)
@@ -163,19 +190,29 @@ func arrayToJSON(elmDtype arrow.DataType, arr array.Interface) (res []interface{
 		res = strToJSON(arr)
 
 	case *array.Binary:
-		bytesToJSON(arr)
+		res = bytesToJSON(arr)
 
 	case *array.List:
-		res, err = arrayToJSON(arr.DataType().(*arrow.ListType).Elem(), arr.ListValues())
+		res, err = interfaceToJSON(arr.ListValues())
 
 	case *array.FixedSizeList:
-		panic("*array.FixedSizeList not implemented")
+		panic("interfaceToJSON *array.FixedSizeList not implemented")
 
 	case *array.Struct:
-		panic("*array.Struct not implemented")
+		panic("interfaceToJSON *array.Struct not implemented")
+		// dt := arr.DataType().(*arrow.StructType)
+		// obj := make(map[string]interface{})
+		// for i, field := range dt.Fields() {
+		// 	value, err := interfaceToJSON(arr.Field(i))
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	obj[field.Name] = value
+		// }
+		// res = obj
 
 	case *array.FixedSizeBinary:
-		panic("*array.FixedSizeBinary not implemented")
+		panic("interfaceToJSON *array.FixedSizeBinary not implemented")
 
 	case *array.Date32:
 		res = date32ToJSON(arr)

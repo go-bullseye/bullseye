@@ -53,6 +53,11 @@ func TestToJSON(t *testing.T) {
 			{Name: "col10-bool", Type: arrow.FixedWidthTypes.Boolean},
 			{Name: "col11-string", Type: arrow.BinaryTypes.String},
 			{Name: "col12-list", Type: arrow.ListOf(arrow.BinaryTypes.String)},
+			{Name: "col13-struct", Type: arrow.StructOf([]arrow.Field{
+				{Name: "field1", Type: arrow.BinaryTypes.String},
+				{Name: "field2", Type: arrow.BinaryTypes.String},
+				{Name: "field3", Type: arrow.PrimitiveTypes.Float64},
+			}...)},
 		},
 		nil,
 	)
@@ -95,6 +100,7 @@ func TestToJSON(t *testing.T) {
 	recordBuilder.Field(11).(*array.StringBuilder).AppendValues([]string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}, valids)
 
 	lb := recordBuilder.Field(12).(*array.ListBuilder)
+	lb.Reserve(10)
 	vb := lb.ValueBuilder().(*array.StringBuilder)
 	for i, v := range valids {
 		lb.Append(v)
@@ -104,10 +110,26 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
+	sb := recordBuilder.Field(13).(*array.StructBuilder)
+	// sb.Reserve(10)
+	fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
+	fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
+	fb2 := sb.FieldBuilder(2).(*array.Float64Builder)
+	for i, v := range valids {
+		sb.Append(v)
+		if v {
+			fb0.Append(fmt.Sprintf("f0:%d", i))
+			fb1.Append(fmt.Sprintf("f1:%d", i))
+			fb2.Append(float64(i))
+		}
+	}
+
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()
 
 	df, err := NewDataFrameFromRecord(pool, rec1)
+
+	fmt.Println(df.Display(0))
 
 	if err != nil {
 		t.Fatal(err)

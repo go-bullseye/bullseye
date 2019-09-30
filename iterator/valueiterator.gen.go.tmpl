@@ -41,9 +41,22 @@ func NewValueIterator(column *array.Column) ValueIterator {
 	case *arrow.ListType:
 		return NewListValueIterator(column)
 
+	case *arrow.StructType:
+		return NewStructValueIterator(column)
+
 	default:
 		panic(fmt.Errorf("dataframe/valueiterator: unhandled field type %T", field.Type))
 	}
+}
+
+func NewInterfaceValueIterator(field arrow.Field, iface array.Interface) ValueIterator {
+	chunk := array.NewChunked(iface.DataType(), []array.Interface{iface})
+	defer chunk.Release()
+
+	col := array.NewColumn(field, chunk)
+	defer col.Release()
+
+	return NewValueIterator(col)
 }
 
 {{range .In}}
