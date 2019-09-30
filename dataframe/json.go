@@ -3,7 +3,6 @@ package dataframe
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -123,7 +122,6 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 			if err != nil {
 				return nil, err
 			}
-			fmt.Printf("Adding field %s = %v\n", field.Name, elVal)
 			o[field.Name] = elVal
 		}
 		return o, nil
