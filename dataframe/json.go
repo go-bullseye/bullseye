@@ -433,7 +433,8 @@ func listToJSON(arr *array.List) ([]interface{}, error) {
 		beg := int64(offsets[j])
 		end := int64(offsets[j+1])
 		slArr := array.NewSlice(arr.ListValues(), beg, end) // Now we have the values for only this element
-		el, err := interfaceToJSON(slArr)                   // recurse down for this element
+		defer slArr.Release()
+		el, err := interfaceToJSON(slArr) // recurse down for this element
 		if err != nil {
 			return nil, err
 		}
