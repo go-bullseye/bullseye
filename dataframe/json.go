@@ -14,6 +14,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Signed128BitInteger struct {
+	Lo uint64 `json:"lo"` // low bits
+	Hi int64  `json:"hi"` // high bits
+}
+
 // ToJSON writes the DataFrame as JSON.
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
@@ -188,23 +193,27 @@ func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 		res = bytesToJSON(arr)
 
 	case *array.List:
-		res, err = interfaceToJSON(arr.ListValues())
+		// res, err = interfaceToJSON(arr.ListValues())
+		res, err = listToJSON(arr)
 
 	case *array.FixedSizeList:
 		panic("interfaceToJSON *array.FixedSizeList not implemented")
 
 	case *array.Struct:
+		// TODO: This one might be slightly more difficult because the lists could still be bunched together...
+		// TODO: We will probably have to do the sublist stuff we did for listvalueiterator
+
 		panic("interfaceToJSON *array.Struct not implemented")
 		// dt := arr.DataType().(*arrow.StructType)
-		// obj := make(map[string]interface{})
+		// o := make(map[string]interface{})
 		// for i, field := range dt.Fields() {
 		// 	value, err := interfaceToJSON(arr.Field(i))
 		// 	if err != nil {
 		// 		return nil, err
 		// 	}
-		// 	obj[field.Name] = value
+		// 	o[field.Name] = value
 		// }
-		// res = obj
+		// res = o
 
 	case *array.FixedSizeBinary:
 		panic("interfaceToJSON *array.FixedSizeBinary not implemented")
@@ -238,11 +247,6 @@ func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 	}
 
 	return
-}
-
-type Signed128BitInteger struct {
-	Lo uint64 `json:"lo"` // low bits
-	Hi int64  `json:"hi"` // high bits
 }
 
 func boolsToJSON(arr *array.Boolean) []interface{} {
@@ -419,4 +423,21 @@ func durationToJSON(arr *array.Duration) []interface{} {
 		o[i] = arr.Value(i)
 	}
 	return o
+}
+
+func listToJSON(arr *array.List) ([]interface{}, error) {
+	res := make([]interface{}, arr.Len())
+	offsets := arr.Offsets()
+	for i := 0; i < arr.Len(); i++ {
+		j := i + arr.Offset()
+		beg := int64(offsets[j])
+		end := int64(offsets[j+1])
+		slArr := array.NewSlice(arr.ListValues(), beg, end) // Now we have the values for only this element
+		el, err := interfaceToJSON(slArr)                   // recurse down for this element
+		if err != nil {
+			return nil, err
+		}
+		res[i] = el
+	}
+	return res, nil
 }

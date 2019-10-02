@@ -53,6 +53,12 @@ func TestToJSON(t *testing.T) {
 				{Name: "field2", Type: arrow.BinaryTypes.String},
 				{Name: "field3", Type: arrow.PrimitiveTypes.Float64},
 			}...)},
+			{Name: "col14-list", Type: arrow.ListOf(arrow.ListOf(arrow.BinaryTypes.String))},
+			// {Name: "col15-los", Type: arrow.ListOf(arrow.StructOf([]arrow.Field{
+			// 	{Name: "field_a", Type: arrow.BinaryTypes.String},
+			// 	{Name: "field_b", Type: arrow.BinaryTypes.String},
+			// 	{Name: "field_c", Type: arrow.PrimitiveTypes.Float64},
+			// }...))},
 		},
 		nil,
 	)
@@ -80,6 +86,7 @@ func TestToJSON(t *testing.T) {
 	recordBuilder.Field(10).(*array.BooleanBuilder).AppendValues([]bool{true, false, true, false, true}, valids)
 	recordBuilder.Field(11).(*array.StringBuilder).AppendValues([]string{"a", "b", "c", "d", "e"}, valids)
 
+	// list
 	lb := recordBuilder.Field(12).(*array.ListBuilder)
 	vb := lb.ValueBuilder().(*array.StringBuilder)
 	for i, v := range valids {
@@ -89,6 +96,7 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
+	// struct
 	sb := recordBuilder.Field(13).(*array.StructBuilder)
 	fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
 	fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
@@ -101,6 +109,38 @@ func TestToJSON(t *testing.T) {
 			fb2.Append(float64(i))
 		}
 	}
+
+	// list of list
+	lb2 := recordBuilder.Field(14).(*array.ListBuilder)
+	llb2 := lb2.ValueBuilder().(*array.ListBuilder)
+	vb2 := llb2.ValueBuilder().(*array.StringBuilder)
+	for i, v := range valids {
+		lb2.Append(v)
+		for j, vv := range valids {
+			llb2.Append(vv)
+			for k := range valids {
+				vb2.Append(fmt.Sprintf("%d:%d:%d", i, j, k))
+			}
+		}
+	}
+
+	// list of struct
+	// lb2 := recordBuilder.Field(14).(*array.ListBuilder)
+	// sb2 := lb2.ValueBuilder().(*array.StructBuilder)
+	// fb02 := sb2.FieldBuilder(0).(*array.StringBuilder)
+	// fb12 := sb2.FieldBuilder(1).(*array.StringBuilder)
+	// fb22 := sb2.FieldBuilder(2).(*array.Float64Builder)
+	// for i, v := range valids {
+	// 	lb2.Append(v)
+	// 	for j, v := range valids {
+	// 		sb2.Append(v)
+	// 		if v {
+	// 			fb02.Append(fmt.Sprintf("e%d:f0:%d", i, j))
+	// 			fb12.Append(fmt.Sprintf("e%d:f1:%d", i, j))
+	// 			fb22.Append(float64(j))
+	// 		}
+	// 	}
+	// }
 
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()
