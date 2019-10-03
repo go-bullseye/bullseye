@@ -44,7 +44,7 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 
 // For this we return []ValueIterators so the user can do what they want with them.
 func (vr *StructValueIterator) ValueInterface() interface{} {
-	fmt.Println("called StructValueIterator ValueInterface")
+	fmt.Printf("called StructValueIterator ValueInterface. index = %d | len = %d\n", vr.index, vr.ref.Len())
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
@@ -57,6 +57,7 @@ func (vr *StructValueIterator) DataType() arrow.DataType {
 }
 
 func (vr *StructValueIterator) Next() bool {
+	fmt.Println("called StructValueIterator Next")
 	if vr.done {
 		return false
 	}

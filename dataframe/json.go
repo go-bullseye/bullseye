@@ -114,12 +114,14 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		defer valueIterator.Release()
 		list := make([]interface{}, 0, 10)
 		dt := valueIterator.DataType()
+		fmt.Println("calling list next")
 		for valueIterator.Next() {
 			el, err := rowElementToJSON(dt, valueIterator.ValueInterface())
 			if err != nil {
 				return nil, err
 			}
 			list = append(list, el)
+			fmt.Println("calling list next")
 		}
 		// list, err := interfaceToJSON(valueIterator)
 		// if err != nil {
@@ -137,7 +139,7 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		o := make(map[string]interface{})
 		for i, field := range dt.Fields() {
 			vi := valueList[i].ValueInterface()
-			elVal, err := rowElementToJSON(field.Type, vi)
+			elVal, err := rowElementToJSON(valueList[i].DataType(), vi) // rowElementToJSON(field.Type, vi)
 			if err != nil {
 				return nil, err
 			}

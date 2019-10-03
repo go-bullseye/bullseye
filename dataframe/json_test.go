@@ -7,7 +7,6 @@ import (
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/decimal128"
 	"github.com/apache/arrow/go/arrow/float16"
 	"github.com/apache/arrow/go/arrow/memory"
 )
@@ -35,30 +34,30 @@ func TestToJSON(t *testing.T) {
 
 	schema := arrow.NewSchema(
 		[]arrow.Field{
-			{Name: "col0-i32", Type: arrow.PrimitiveTypes.Int32},
-			{Name: "col1-f64", Type: arrow.PrimitiveTypes.Float64},
-			{Name: "col2-f16", Type: arrow.FixedWidthTypes.Float16},
-			{Name: "col3-date32", Type: arrow.PrimitiveTypes.Date32},
-			{Name: "col4-date64", Type: arrow.PrimitiveTypes.Date64},
-			{Name: "col5-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
-			{Name: "col6-dtitvl", Type: arrow.FixedWidthTypes.DayTimeInterval},
-			{Name: "col7-dec128", Type: &arrow.Decimal128Type{Precision: 10, Scale: 1}},
-			{Name: "col8-duration-s", Type: arrow.FixedWidthTypes.Duration_s},
-			{Name: "col9-ts-s", Type: arrow.FixedWidthTypes.Timestamp_s},
-			{Name: "col10-bool", Type: arrow.FixedWidthTypes.Boolean},
-			{Name: "col11-string", Type: arrow.BinaryTypes.String},
-			{Name: "col12-list", Type: arrow.ListOf(arrow.BinaryTypes.String)},
+			// {Name: "col0-i32", Type: arrow.PrimitiveTypes.Int32},
+			// {Name: "col1-f64", Type: arrow.PrimitiveTypes.Float64},
+			// {Name: "col2-f16", Type: arrow.FixedWidthTypes.Float16},
+			// {Name: "col3-date32", Type: arrow.PrimitiveTypes.Date32},
+			// {Name: "col4-date64", Type: arrow.PrimitiveTypes.Date64},
+			// {Name: "col5-mitvl", Type: arrow.FixedWidthTypes.MonthInterval},
+			// {Name: "col6-dtitvl", Type: arrow.FixedWidthTypes.DayTimeInterval},
+			// {Name: "col7-dec128", Type: &arrow.Decimal128Type{Precision: 10, Scale: 1}},
+			// {Name: "col8-duration-s", Type: arrow.FixedWidthTypes.Duration_s},
+			// {Name: "col9-ts-s", Type: arrow.FixedWidthTypes.Timestamp_s},
+			// {Name: "col10-bool", Type: arrow.FixedWidthTypes.Boolean},
+			// {Name: "col11-string", Type: arrow.BinaryTypes.String},
+			// {Name: "col12-list", Type: arrow.ListOf(arrow.BinaryTypes.String)},
 			{Name: "col13-struct", Type: arrow.StructOf([]arrow.Field{
 				{Name: "field1", Type: arrow.BinaryTypes.String},
-				{Name: "field2", Type: arrow.BinaryTypes.String},
-				{Name: "field3", Type: arrow.PrimitiveTypes.Float64},
+				// {Name: "field2", Type: arrow.BinaryTypes.String},
+				// {Name: "field3", Type: arrow.PrimitiveTypes.Float64},
 			}...)},
 			{Name: "col14-list", Type: arrow.ListOf(arrow.ListOf(arrow.BinaryTypes.String))},
-			// {Name: "col15-los", Type: arrow.ListOf(arrow.StructOf([]arrow.Field{
-			// 	{Name: "field_a", Type: arrow.BinaryTypes.String},
-			// 	// {Name: "field_b", Type: arrow.BinaryTypes.String},
-			// 	// {Name: "field_c", Type: arrow.PrimitiveTypes.Float64},
-			// }...))},
+			{Name: "col15-los", Type: arrow.ListOf(arrow.StructOf([]arrow.Field{
+				{Name: "field_a", Type: arrow.BinaryTypes.String},
+				// {Name: "field_b", Type: arrow.BinaryTypes.String},
+				// {Name: "field_c", Type: arrow.PrimitiveTypes.Float64},
+			}...))},
 		},
 		nil,
 	)
@@ -70,33 +69,37 @@ func TestToJSON(t *testing.T) {
 	defer recordBuilder.Release()
 
 	valids := []bool{true, true, true, false, true}
-	float16Values := f16sFrom([]float64{1, 2, 3, 4, 5})
-	dayTimeIntervalValues := []arrow.DayTimeInterval{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}}
-	decimal128Values := []decimal128.Num{decimal128.New(1, 1), decimal128.New(2, 2), decimal128.New(3, 3), {}, decimal128.FromI64(-5)}
-	recordBuilder.Field(0).(*array.Int32Builder).AppendValues([]int32{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(1).(*array.Float64Builder).AppendValues([]float64{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(2).(*array.Float16Builder).AppendValues(float16Values, valids)
-	recordBuilder.Field(3).(*array.Date32Builder).AppendValues([]arrow.Date32{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(4).(*array.Date64Builder).AppendValues([]arrow.Date64{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(6).(*array.DayTimeIntervalBuilder).AppendValues(dayTimeIntervalValues, valids)
-	recordBuilder.Field(7).(*array.Decimal128Builder).AppendValues(decimal128Values, valids)
-	recordBuilder.Field(8).(*array.DurationBuilder).AppendValues([]arrow.Duration{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(9).(*array.TimestampBuilder).AppendValues([]arrow.Timestamp{1, 2, 3, 4, 5}, valids)
-	recordBuilder.Field(10).(*array.BooleanBuilder).AppendValues([]bool{true, false, true, false, true}, valids)
-	recordBuilder.Field(11).(*array.StringBuilder).AppendValues([]string{"a", "b", "c", "d", "e"}, valids)
+	f := 0
+	// float16Values := f16sFrom([]float64{1, 2, 3, 4, 5})
+	// dayTimeIntervalValues := []arrow.DayTimeInterval{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}}
+	// decimal128Values := []decimal128.Num{decimal128.New(1, 1), decimal128.New(2, 2), decimal128.New(3, 3), {}, decimal128.FromI64(-5)}
+	// recordBuilder.Field(0).(*array.Int32Builder).AppendValues([]int32{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(1).(*array.Float64Builder).AppendValues([]float64{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(2).(*array.Float16Builder).AppendValues(float16Values, valids)
+	// recordBuilder.Field(3).(*array.Date32Builder).AppendValues([]arrow.Date32{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(4).(*array.Date64Builder).AppendValues([]arrow.Date64{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(5).(*array.MonthIntervalBuilder).AppendValues([]arrow.MonthInterval{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(6).(*array.DayTimeIntervalBuilder).AppendValues(dayTimeIntervalValues, valids)
+	// recordBuilder.Field(7).(*array.Decimal128Builder).AppendValues(decimal128Values, valids)
+	// recordBuilder.Field(8).(*array.DurationBuilder).AppendValues([]arrow.Duration{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(9).(*array.TimestampBuilder).AppendValues([]arrow.Timestamp{1, 2, 3, 4, 5}, valids)
+	// recordBuilder.Field(10).(*array.BooleanBuilder).AppendValues([]bool{true, false, true, false, true}, valids)
+	// recordBuilder.Field(11).(*array.StringBuilder).AppendValues([]string{"a", "b", "c", "d", "e"}, valids)
 
 	// list
-	addList(t, recordBuilder, valids)
+	// addList(t, recordBuilder, valids)
 
 	// struct
-	addStruct(t, recordBuilder, valids)
+	addStruct(f, t, recordBuilder, valids)
+	f++
 
 	// list of list
-	addListOfLists(t, recordBuilder, valids)
+	addListOfLists(f, t, recordBuilder, valids)
+	f++
 
 	// list of struct
-	// addListOfStructs(t, recordBuilder, valids)
+	addListOfStructs(f, t, recordBuilder, valids)
+	f++
 
 	rec1 := recordBuilder.NewRecord()
 	defer rec1.Release()
@@ -121,9 +124,9 @@ func TestToJSON(t *testing.T) {
 	}
 }
 
-func addList(t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
+func addList(fi int, t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
 	t.Helper()
-	lb := recordBuilder.Field(12).(*array.ListBuilder)
+	lb := recordBuilder.Field(fi).(*array.ListBuilder)
 	vb := lb.ValueBuilder().(*array.StringBuilder)
 	for i, v := range valids {
 		lb.Append(v)
@@ -133,52 +136,53 @@ func addList(t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
 	}
 }
 
-func addStruct(t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
+func addStruct(fi int, t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
 	t.Helper()
-	sb := recordBuilder.Field(13).(*array.StructBuilder)
+	sb := recordBuilder.Field(fi).(*array.StructBuilder)
 	fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
-	fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
-	fb2 := sb.FieldBuilder(2).(*array.Float64Builder)
+	// fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
+	// fb2 := sb.FieldBuilder(2).(*array.Float64Builder)
 	for i, v := range valids {
 		sb.Append(v)
 		if v {
 			fb0.Append(fmt.Sprintf("f0:%d", i))
-			fb1.Append(fmt.Sprintf("f1:%d", i))
-			fb2.Append(float64(i))
+			// fb1.Append(fmt.Sprintf("f1:%d", i))
+			// fb2.Append(float64(i))
 		}
 	}
 }
 
-func addListOfLists(t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
+func addListOfLists(fi int, t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
 	t.Helper()
-	lb := recordBuilder.Field(14).(*array.ListBuilder)
+	lb := recordBuilder.Field(fi).(*array.ListBuilder)
 	llb := lb.ValueBuilder().(*array.ListBuilder)
 	vb := llb.ValueBuilder().(*array.StringBuilder)
 	for i, v := range valids {
-		lb.Append(v)
+		lb.Append(v) // 1 list
 		for j, vv := range valids {
-			llb.Append(vv)
+			llb.Append(vv) // 5 sub lists
 			for k := range valids {
-				vb.Append(fmt.Sprintf("%d:%d:%d", i, j, k))
+				vb.Append(fmt.Sprintf("%d:%d:%d", i, j, k)) // 5 string elements per list
 			}
 		}
 	}
 }
 
-func addListOfStructs(t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
+func addListOfStructs(fi int, t *testing.T, recordBuilder *array.RecordBuilder, valids []bool) {
 	t.Helper()
-	lb := recordBuilder.Field(15).(*array.ListBuilder)
+	lb := recordBuilder.Field(fi).(*array.ListBuilder)
 	sb := lb.ValueBuilder().(*array.StructBuilder)
 	fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
 	// fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
 	// fb2 := sb.FieldBuilder(2).(*array.Float64Builder)
 	for i, v := range valids {
-		lb.Append(v) // 5 lists
-		// for j, v := range valids {
+		lb.Append(v) // 1 list per row
+		// for j, vv := range valids {
 		for j := 0; j < 2; j++ {
-			sb.Append(v) // 2 structs per list
-			if v {
-				fb0.Append(fmt.Sprintf("l%d:s%d", i, j)) // 1 field per struct
+			vv := true
+			sb.Append(vv) // 5 structs
+			if vv {
+				fb0.Append(fmt.Sprintf("r%d:s%d", i, j)) // 1 field per struct
 				// fb0.Append(fmt.Sprintf("e%d:f0:%d", i, j))
 				// fb1.Append(fmt.Sprintf("e%d:f1:%d", i, j))
 				// fb2.Append(float64(j))

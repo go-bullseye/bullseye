@@ -63,6 +63,7 @@ func (vr *ListValueIterator) DataType() arrow.DataType {
 }
 
 func (vr *ListValueIterator) Next() bool {
+	fmt.Println("called ListValueIterator Next")
 	if vr.done {
 		return false
 	}
