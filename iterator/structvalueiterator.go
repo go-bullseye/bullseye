@@ -1,6 +1,8 @@
+// DO NOT USE THIS!
 package iterator
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
@@ -39,6 +41,7 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 
 // For this we return []ValueIterators so the user can do what they want with them.
 func (vr *StructValueIterator) ValueInterface() interface{} {
+	fmt.Println("called StructValueIterator ValueInterface")
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}

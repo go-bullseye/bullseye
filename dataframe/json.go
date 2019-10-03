@@ -3,6 +3,7 @@ package dataframe
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -62,6 +63,7 @@ func rowToJSON(schema *arrow.Schema, stepValue *iterator.StepValue) (map[string]
 }
 
 func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, error) {
+	fmt.Printf("rowElementToJSON type is: %s | actual type %T\n", dtype.Name(), value)
 	if value == nil {
 		return nil, nil
 	}
@@ -102,18 +104,29 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		}
 		return Signed128BitInteger{Lo: d128.LowBits(), Hi: d128.HighBits()}, nil
 	case arrow.LIST:
-		valueList, ok := value.(array.Interface)
+		fmt.Println("matched LIST")
+		valueIterator, ok := value.(iterator.ValueIterator)
 		if !ok {
 			return nil, errors.Errorf("dataframe/json could not convert value to interface")
 		}
 
-		defer valueList.Release()
-		list, err := interfaceToJSON(valueList)
+		defer valueIterator.Release()
+		list := make([]interface{}, 0, 10)
+		for valueIterator.Next() {
+			el, err := rowElementToJSON(valueIterator.ValueInterface())
+			if err != nil {
+				return nil, err
+			}
+			list = append(list, el)
+		}
+		list, err := interfaceToJSON(valueIterator)
 		if err != nil {
 			return nil, err
 		}
 		return list, nil
 	case arrow.STRUCT:
+		fmt.Println("matched STRUCT")
+		// TODO: this is probably wrong because it's not using offsets
 		valueList, ok := value.([]iterator.ValueIterator)
 		if !ok {
 			return nil, errors.Errorf("dataframe/json could not convert value to interface")
@@ -148,7 +161,7 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 	return nil, errors.Errorf("dataframe/json - type not implemented: %s", dtype.Name())
 }
 
-func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
+func interfaceToJSON(arr array.Interface) (res interface{}, err error) {
 	switch arr := arr.(type) {
 	case *array.Boolean:
 		res = boolsToJSON(arr)
@@ -193,7 +206,7 @@ func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 		res = bytesToJSON(arr)
 
 	case *array.List:
-		// res, err = interfaceToJSON(arr.ListValues())
+		fmt.Println("converting list")
 		res, err = listToJSON(arr)
 
 	case *array.FixedSizeList:
@@ -203,17 +216,8 @@ func interfaceToJSON(arr array.Interface) (res []interface{}, err error) {
 		// TODO: This one might be slightly more difficult because the lists could still be bunched together...
 		// TODO: We will probably have to do the sublist stuff we did for listvalueiterator
 
-		panic("interfaceToJSON *array.Struct not implemented")
-		// dt := arr.DataType().(*arrow.StructType)
-		// o := make(map[string]interface{})
-		// for i, field := range dt.Fields() {
-		// 	value, err := interfaceToJSON(arr.Field(i))
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
-		// 	o[field.Name] = value
-		// }
-		// res = o
+		// panic("interfaceToJSON *array.Struct not implemented")
+		res, err = structToJSON(arr)
 
 	case *array.FixedSizeBinary:
 		panic("interfaceToJSON *array.FixedSizeBinary not implemented")
@@ -441,4 +445,23 @@ func listToJSON(arr *array.List) ([]interface{}, error) {
 		res[i] = el
 	}
 	return res, nil
+}
+
+func structToJSON(arr *array.Struct) (interface{}, error) {
+	fmt.Println("converting struct")
+	dt := arr.DataType().(*arrow.StructType)
+	o := make(map[string]interface{})
+	// offsets := arr.Offset()
+	for i, field := range dt.Fields() {
+		f := arr.Field(i)
+		// f.Offsets()
+
+		value, err := interfaceToJSON(f)
+		if err != nil {
+			return nil, err
+		}
+		o[field.Name] = value
+	}
+
+	return o, nil
 }

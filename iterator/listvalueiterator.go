@@ -1,8 +1,11 @@
+// DO NOT USE THIS!
 package iterator
 
 import (
+	"fmt"
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
@@ -34,6 +37,7 @@ func NewListValueIterator(col *array.Column) *ListValueIterator {
 }
 
 func (vr *ListValueIterator) ValueInterface() interface{} {
+	fmt.Println("called ListValueIterator ValueInterface")
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
@@ -41,7 +45,13 @@ func (vr *ListValueIterator) ValueInterface() interface{} {
 	offsets := vr.ref.Offsets()
 	beg := int64(offsets[j])
 	end := int64(offsets[j+1])
-	return array.NewSlice(vr.ref.ListValues(), beg, end)
+	arr := array.NewSlice(vr.ref.ListValues(), beg, end)
+	// TODO: Might need this:
+	// defer arr.Release()
+	return NewInterfaceValueIterator(
+		arrow.Field{Name: "item", Type: vr.ref.DataType().(*arrow.ListType).Elem(), Nullable: true},
+		arr,
+	)
 }
 
 func (vr *ListValueIterator) Next() bool {
