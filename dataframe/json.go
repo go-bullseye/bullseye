@@ -24,6 +24,8 @@ type Signed128BitInteger struct {
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
 
+	// Iterate over the rows
+
 	// Extract one row at a time
 	it := iterator.NewStepIteratorForColumns(df.Columns())
 	defer it.Release()
@@ -109,20 +111,20 @@ func rowElementToJSON(dtype arrow.DataType, value interface{}) (interface{}, err
 		if !ok {
 			return nil, errors.Errorf("dataframe/json could not convert value to interface")
 		}
-
 		defer valueIterator.Release()
 		list := make([]interface{}, 0, 10)
+		dt := valueIterator.DataType()
 		for valueIterator.Next() {
-			el, err := rowElementToJSON(valueIterator.ValueInterface())
+			el, err := rowElementToJSON(dt, valueIterator.ValueInterface())
 			if err != nil {
 				return nil, err
 			}
 			list = append(list, el)
 		}
-		list, err := interfaceToJSON(valueIterator)
-		if err != nil {
-			return nil, err
-		}
+		// list, err := interfaceToJSON(valueIterator)
+		// if err != nil {
+		// 	return nil, err
+		// }
 		return list, nil
 	case arrow.STRUCT:
 		fmt.Println("matched STRUCT")

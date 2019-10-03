@@ -3,6 +3,7 @@ package iterator
 import (
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
@@ -17,6 +18,8 @@ type StringValueIterator struct {
 	index int           // current value index
 	ref   *array.String // the chunk reference
 	done  bool          // there are no more elements for this iterator
+
+	dataType arrow.DataType
 }
 
 // NewStringValueIterator creates a new StringValueIterator for reading an Arrow Column.
@@ -30,6 +33,8 @@ func NewStringValueIterator(col *array.Column) *StringValueIterator {
 
 		index: 0,
 		ref:   nil,
+
+		dataType: col.DataType(),
 	}
 }
 
@@ -53,6 +58,10 @@ func (vr *StringValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.ref.Value(vr.index)
+}
+
+func (vr *StringValueIterator) DataType() arrow.DataType {
+	return vr.dataType
 }
 
 // Next moves the iterator to the next value. This will return false

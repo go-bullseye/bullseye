@@ -21,6 +21,8 @@ type ListValueIterator struct {
 	index int         // current value index
 	ref   *array.List // the chunk reference
 	done  bool        // there are no more elements for this iterator
+
+	dataType arrow.DataType
 }
 
 func NewListValueIterator(col *array.Column) *ListValueIterator {
@@ -33,11 +35,14 @@ func NewListValueIterator(col *array.Column) *ListValueIterator {
 
 		index: 0,
 		ref:   nil,
+
+		dataType: col.DataType(),
 	}
 }
 
 func (vr *ListValueIterator) ValueInterface() interface{} {
 	fmt.Println("called ListValueIterator ValueInterface")
+	elDt := vr.ref.DataType().(*arrow.ListType).Elem()
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
@@ -46,12 +51,15 @@ func (vr *ListValueIterator) ValueInterface() interface{} {
 	beg := int64(offsets[j])
 	end := int64(offsets[j+1])
 	arr := array.NewSlice(vr.ref.ListValues(), beg, end)
-	// TODO: Might need this:
-	// defer arr.Release()
+	defer arr.Release()
 	return NewInterfaceValueIterator(
-		arrow.Field{Name: "item", Type: vr.ref.DataType().(*arrow.ListType).Elem(), Nullable: true},
+		arrow.Field{Name: "item", Type: elDt, Nullable: true},
 		arr,
 	)
+}
+
+func (vr *ListValueIterator) DataType() arrow.DataType {
+	return vr.dataType
 }
 
 func (vr *ListValueIterator) Next() bool {

@@ -24,6 +24,7 @@ type StructValueIterator struct {
 
 	// We need iterators for each field
 	fieldIterators []ValueIterator
+	dataType       arrow.DataType
 }
 
 func NewStructValueIterator(col *array.Column) *StructValueIterator {
@@ -36,6 +37,8 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 
 		index: -1,
 		ref:   nil,
+
+		dataType: col.DataType(),
 	}
 }
 
@@ -47,6 +50,10 @@ func (vr *StructValueIterator) ValueInterface() interface{} {
 	}
 
 	return vr.fieldIterators
+}
+
+func (vr *StructValueIterator) DataType() arrow.DataType {
+	return vr.dataType
 }
 
 func (vr *StructValueIterator) Next() bool {

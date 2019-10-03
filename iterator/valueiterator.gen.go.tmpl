@@ -14,6 +14,9 @@ type ValueIterator interface {
 	// ValueInterface returns the current value as an interface{}.
 	ValueInterface() interface{}
 
+	// DataType returns the DataType for the Column being iterated over.
+	DataType() arrow.DataType
+
 	// Next moves the iterator to the next value. This will return false when there are no more values.
 	Next() bool
 
@@ -70,6 +73,8 @@ type {{.Name}}ValueIterator struct {
 	values []{{or .QualifiedType .Type}}      // current chunk values
 	ref    *array.{{.Name}} // the chunk reference
 	done bool // there are no more elements for this iterator
+
+	dataType arrow.DataType
 }
 
 // New{{.Name}}ValueIterator creates a new {{.Name}}ValueIterator for reading an Arrow Column.
@@ -83,6 +88,8 @@ func New{{.Name}}ValueIterator(col *array.Column) *{{.Name}}ValueIterator {
 
 		index:  0,
 		values: nil,
+
+		dataType: col.DataType(),
 	}
 }
 
@@ -105,6 +112,10 @@ func (vr *{{.Name}}ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+func (vr *{{.Name}}ValueIterator) DataType() arrow.DataType {
+	return vr.dataType
 }
 
 // Next moves the iterator to the next value. This will return false

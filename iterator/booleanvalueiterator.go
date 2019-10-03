@@ -3,6 +3,7 @@ package iterator
 import (
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/go-bullseye/bullseye/internal/debug"
 )
@@ -16,6 +17,8 @@ type BooleanValueIterator struct {
 	index int            // current value index
 	ref   *array.Boolean // the chunk reference
 	done  bool           // there are no more elements for this iterator
+
+	dataType arrow.DataType
 }
 
 // NewBooleanValueIterator creates a new BooleanValueIterator for reading an Arrow Column.
@@ -29,6 +32,8 @@ func NewBooleanValueIterator(col *array.Column) *BooleanValueIterator {
 
 		index: 0,
 		ref:   nil,
+
+		dataType: col.DataType(),
 	}
 }
 
@@ -52,6 +57,10 @@ func (vr *BooleanValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.ref.Value(vr.index)
+}
+
+func (vr *BooleanValueIterator) DataType() arrow.DataType {
+	return vr.dataType
 }
 
 // Next moves the iterator to the next value. This will return false
