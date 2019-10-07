@@ -59,6 +59,14 @@ func (vr *BooleanValueIterator) ValueInterface() interface{} {
 	return vr.ref.Value(vr.index)
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *BooleanValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return booleanAsJSON(vr.ref.Value(vr.index))
+}
+
 func (vr *BooleanValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }

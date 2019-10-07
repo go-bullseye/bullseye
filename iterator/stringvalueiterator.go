@@ -60,6 +60,14 @@ func (vr *StringValueIterator) ValueInterface() interface{} {
 	return vr.ref.Value(vr.index)
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *StringValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return stringAsJSON(vr.ref.Value(vr.index))
+}
+
 func (vr *StringValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }

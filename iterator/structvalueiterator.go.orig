@@ -25,19 +25,11 @@ type StructValueIterator struct {
 	// We need iterators for each field
 	fieldIterators []ValueIterator
 	dataType       *arrow.StructType
-	fieldNames     []string
 }
 
 func NewStructValueIterator(col *array.Column) *StructValueIterator {
 	// We need a ChunkIterator to read the chunks
 	chunkIterator := NewChunkIterator(col)
-
-	dataType := col.DataType().(*arrow.StructType)
-	fields := dataType.Fields()
-	fieldNames := make([]string, len(fields))
-	for i, field := range fields {
-		fieldNames[i] = field.Name
-	}
 
 	return &StructValueIterator{
 		refCount:      1,
@@ -46,8 +38,7 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 		index: -1,
 		ref:   nil,
 
-		dataType:   dataType,
-		fieldNames: fieldNames,
+		dataType: col.DataType().(*arrow.StructType),
 	}
 }
 
@@ -58,21 +49,7 @@ func (vr *StructValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 
-	obj := make(map[string]interface{})
-	for i, fieldIterator := range vr.fieldIterators {
-		obj[vr.fieldNames[i]] = fieldIterator.ValueInterface()
-	}
-
-	return obj
-}
-
-// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
-func (vr *StructValueIterator) ValueAsJSON() (interface{}, error) {
-	if vr.ref.IsNull(vr.index) {
-		return nil, nil
-	}
-	panic("StructValueIterator ValueAsJSON not yet implemented")
-	return structAsJSON(vr.ValueInterface())
+	return vr.fieldIterators
 }
 
 func (vr *StructValueIterator) DataType() arrow.DataType {

@@ -18,6 +18,9 @@ type ValueIterator interface {
 	// ValueInterface returns the current value as an interface{}.
 	ValueInterface() interface{}
 
+	// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+	ValueAsJSON() (interface{}, error)
+
 	// DataType returns the DataType for the Column being iterated over.
 	DataType() arrow.DataType
 
@@ -174,6 +177,14 @@ func (vr *Int64ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Int64ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return int64AsJSON(vr.values[vr.index])
+}
+
 func (vr *Int64ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -294,6 +305,14 @@ func (vr *Uint64ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Uint64ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return uint64AsJSON(vr.values[vr.index])
 }
 
 func (vr *Uint64ValueIterator) DataType() arrow.DataType {
@@ -418,6 +437,14 @@ func (vr *Float64ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Float64ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return float64AsJSON(vr.values[vr.index])
+}
+
 func (vr *Float64ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -538,6 +565,14 @@ func (vr *Int32ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Int32ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return int32AsJSON(vr.values[vr.index])
 }
 
 func (vr *Int32ValueIterator) DataType() arrow.DataType {
@@ -662,6 +697,14 @@ func (vr *Uint32ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Uint32ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return uint32AsJSON(vr.values[vr.index])
+}
+
 func (vr *Uint32ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -782,6 +825,14 @@ func (vr *Float32ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Float32ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return float32AsJSON(vr.values[vr.index])
 }
 
 func (vr *Float32ValueIterator) DataType() arrow.DataType {
@@ -906,6 +957,14 @@ func (vr *Int16ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Int16ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return int16AsJSON(vr.values[vr.index])
+}
+
 func (vr *Int16ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -1026,6 +1085,14 @@ func (vr *Uint16ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Uint16ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return uint16AsJSON(vr.values[vr.index])
 }
 
 func (vr *Uint16ValueIterator) DataType() arrow.DataType {
@@ -1150,6 +1217,14 @@ func (vr *Int8ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Int8ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return int8AsJSON(vr.values[vr.index])
+}
+
 func (vr *Int8ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -1270,6 +1345,14 @@ func (vr *Uint8ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Uint8ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return uint8AsJSON(vr.values[vr.index])
 }
 
 func (vr *Uint8ValueIterator) DataType() arrow.DataType {
@@ -1394,6 +1477,14 @@ func (vr *TimestampValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *TimestampValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return timestampAsJSON(vr.values[vr.index])
+}
+
 func (vr *TimestampValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -1514,6 +1605,14 @@ func (vr *Time32ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Time32ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return time32AsJSON(vr.values[vr.index])
 }
 
 func (vr *Time32ValueIterator) DataType() arrow.DataType {
@@ -1638,6 +1737,14 @@ func (vr *Time64ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Time64ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return time64AsJSON(vr.values[vr.index])
+}
+
 func (vr *Time64ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -1758,6 +1865,14 @@ func (vr *Date32ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Date32ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return date32AsJSON(vr.values[vr.index])
 }
 
 func (vr *Date32ValueIterator) DataType() arrow.DataType {
@@ -1882,6 +1997,14 @@ func (vr *Date64ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Date64ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return date64AsJSON(vr.values[vr.index])
+}
+
 func (vr *Date64ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -2002,6 +2125,14 @@ func (vr *DurationValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *DurationValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return durationAsJSON(vr.values[vr.index])
 }
 
 func (vr *DurationValueIterator) DataType() arrow.DataType {
@@ -2126,6 +2257,14 @@ func (vr *MonthIntervalValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *MonthIntervalValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return monthIntervalAsJSON(vr.values[vr.index])
+}
+
 func (vr *MonthIntervalValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -2246,6 +2385,14 @@ func (vr *Float16ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Float16ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return float16AsJSON(vr.values[vr.index])
 }
 
 func (vr *Float16ValueIterator) DataType() arrow.DataType {
@@ -2370,6 +2517,14 @@ func (vr *Decimal128ValueIterator) ValueInterface() interface{} {
 	return vr.values[vr.index]
 }
 
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *Decimal128ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return decimal128AsJSON(vr.values[vr.index])
+}
+
 func (vr *Decimal128ValueIterator) DataType() arrow.DataType {
 	return vr.dataType
 }
@@ -2490,6 +2645,14 @@ func (vr *DayTimeIntervalValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *DayTimeIntervalValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return dayTimeIntervalAsJSON(vr.values[vr.index])
 }
 
 func (vr *DayTimeIntervalValueIterator) DataType() arrow.DataType {

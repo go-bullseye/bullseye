@@ -14,6 +14,9 @@ type ValueIterator interface {
 	// ValueInterface returns the current value as an interface{}.
 	ValueInterface() interface{}
 
+	// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+	ValueAsJSON() (interface{}, error)
+
 	// DataType returns the DataType for the Column being iterated over.
 	DataType() arrow.DataType
 
@@ -112,6 +115,14 @@ func (vr *{{.Name}}ValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 	return vr.values[vr.index]
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *{{.Name}}ValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+	return {{.name}}AsJSON(vr.values[vr.index])
 }
 
 func (vr *{{.Name}}ValueIterator) DataType() arrow.DataType {

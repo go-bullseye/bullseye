@@ -1,0 +1,53 @@
+package iterator
+
+import (
+	"sync/atomic"
+
+	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/go-bullseye/bullseye/internal/debug"
+)
+
+// A StructValueIterator is really just a step iterator that
+// iterates over the struct elements.
+// {["f0:0" (null) "f0:9"] ["f1:0" (null) "f1:9"] [0 (null) 9]}
+type StructValueIterator struct {
+	stepIterator *StepIterator
+}
+
+func NewStructValueIterator(col *array.Column) *StructValueIterator {
+	dtype := col.DataType().(*arrow.StructType)
+	fields := dtype.Fields()
+	for _, field := range fields {
+		field.
+	}
+	
+	
+	// NewStepIteratorForColumns(col)
+
+	return &StructValueIterator{}
+}
+
+// For this we return []ValueIterators so the user can do what they want with them.
+func (vr *StructValueIterator) ValueInterface() interface{} {
+
+}
+
+func (vr *StructValueIterator) DataType() arrow.DataType {
+
+}
+
+func (vr *StructValueIterator) Next() bool {
+
+}
+
+// Retain keeps a reference to the StructValueIterator
+func (vr *StructValueIterator) Retain() {
+
+}
+
+// Release removes a reference to the StructValueIterator
+func (vr *StructValueIterator) Release() {
+	debug.Assert(atomic.LoadInt64(&vr.refCount) > 0, "too many releases")
+
+}

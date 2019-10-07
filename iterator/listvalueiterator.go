@@ -22,12 +22,15 @@ type ListValueIterator struct {
 	ref   *array.List // the chunk reference
 	done  bool        // there are no more elements for this iterator
 
-	dataType arrow.DataType
+	dataType     arrow.DataType
+	elemDataType arrow.DataType
 }
 
 func NewListValueIterator(col *array.Column) *ListValueIterator {
 	// We need a ChunkIterator to read the chunks
 	chunkIterator := NewChunkIterator(col)
+
+	elemDataType := col.DataType().(*arrow.ListType).Elem()
 
 	return &ListValueIterator{
 		refCount:      1,
@@ -36,16 +39,17 @@ func NewListValueIterator(col *array.Column) *ListValueIterator {
 		index: 0,
 		ref:   nil,
 
-		dataType: col.DataType(),
+		dataType:     col.DataType(),
+		elemDataType: elemDataType,
 	}
 }
 
 func (vr *ListValueIterator) ValueInterface() interface{} {
 	fmt.Println("called ListValueIterator ValueInterface")
-	elDt := vr.ref.DataType().(*arrow.ListType).Elem()
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
+	// elDt := vr.ref.DataType().(*arrow.ListType).Elem()
 	j := vr.index + vr.ref.Offset() // index + data offset
 	offsets := vr.ref.Offsets()
 	beg := int64(offsets[j])
@@ -53,9 +57,39 @@ func (vr *ListValueIterator) ValueInterface() interface{} {
 	arr := array.NewSlice(vr.ref.ListValues(), beg, end)
 	defer arr.Release()
 	return NewInterfaceValueIterator(
-		arrow.Field{Name: "item", Type: elDt, Nullable: true},
+		arrow.Field{Name: "item", Type: vr.elemDataType, Nullable: true},
 		arr,
 	)
+}
+
+// ValueAsJSON returns the current value as an interface{} in it's JSON representation.
+func (vr *ListValueIterator) ValueAsJSON() (interface{}, error) {
+	if vr.ref.IsNull(vr.index) {
+		return nil, nil
+	}
+
+	j := vr.index + vr.ref.Offset() // index + data offset
+	offsets := vr.ref.Offsets()
+	beg := offsets[j]
+	end := offsets[j+1]
+	arr := array.NewSlice(vr.ref.ListValues(), int64(beg), int64(end))
+	defer arr.Release()
+	iter := NewInterfaceValueIterator(
+		arrow.Field{Name: "item", Type: vr.elemDataType, Nullable: true},
+		arr,
+	)
+	defer iter.Release()
+
+	list := make([]interface{}, 0, end-beg)
+	for iter.Next() {
+		jsonValue, err := iter.ValueAsJSON()
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, jsonValue)
+	}
+
+	return list, nil
 }
 
 func (vr *ListValueIterator) DataType() arrow.DataType {
