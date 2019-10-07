@@ -105,10 +105,6 @@ func stringAsJSON(v interface{}) (interface{}, error) {
 	return v, nil
 }
 
-func structAsJSON(v interface{}) (interface{}, error) {
-	return v, nil
-}
-
 // func fixedSizeBinary(v interface{}) (interface{}, error) {
 // 	// TODO(nickpoorman): Verify this is correct....
 // 	// dt := dtype.(*arrow.FixedSizeBinaryType)

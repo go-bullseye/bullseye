@@ -393,6 +393,180 @@ func TestValueAsJSON(t *testing.T) {
 			result: `["foo","bar"]`,
 			err:    nil,
 		},
+		{
+			name: "struct of string fields test",
+			iterator: func() iterator.ValueIterator {
+				dt := arrow.StructOf([]arrow.Field{
+					{Name: "field1", Type: arrow.BinaryTypes.String},
+					{Name: "field2", Type: arrow.BinaryTypes.String},
+				}...)
+				sb := array.NewStructBuilder(mem, dt)
+				defer sb.Release()
+				fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
+				fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
+
+				sb.Append(true)
+				fb0.Append("foo")
+				fb1.Append("bar")
+				sb.Append(false)
+				sb.Append(true)
+				fb0.Append("ping")
+				fb1.Append("pong")
+
+				s1 := sb.NewStructArray()
+				defer s1.Release()
+
+				chunk := array.NewChunked(
+					dt,
+					[]array.Interface{s1},
+				)
+				defer chunk.Release()
+
+				field := arrow.Field{Name: "sofstr", Type: dt, Nullable: true}
+				col := array.NewColumn(field, chunk)
+				defer col.Release()
+
+				return iterator.NewValueIterator(col)
+			}(),
+			result: `{"field1":"foo","field2":"bar"}`,
+			err:    nil,
+		},
+		{
+			name: "list of list of string test",
+			iterator: func() iterator.ValueIterator {
+				lb := array.NewListBuilder(mem, arrow.ListOf(arrow.BinaryTypes.String))
+				defer lb.Release()
+
+				lb2 := lb.ValueBuilder().(*array.ListBuilder)
+				vb := lb2.ValueBuilder().(*array.StringBuilder)
+				// [[[foo,bar],null,[ping,pong]],null,[beep]]
+				lb.Append(true)
+				lb2.Append(true)
+				vb.Append("foo")
+				vb.Append("bar")
+				lb2.Append(false)
+				lb2.Append(true)
+				vb.Append("ping")
+				vb.Append("pong")
+				lb.Append(false)
+				lb.Append(true)
+				lb2.Append(true)
+				vb.Append("beep")
+
+				i1 := lb.NewListArray()
+				defer i1.Release()
+
+				chunk := array.NewChunked(
+					arrow.ListOf(arrow.ListOf(arrow.BinaryTypes.String)),
+					[]array.Interface{i1},
+				)
+				defer chunk.Release()
+
+				field := arrow.Field{Name: "los", Type: arrow.ListOf(arrow.ListOf(arrow.BinaryTypes.String)), Nullable: true}
+				col := array.NewColumn(field, chunk)
+				defer col.Release()
+
+				return iterator.NewValueIterator(col)
+			}(),
+			result: `[["foo","bar"],null,["ping","pong"]]`,
+			err:    nil,
+		},
+		{
+			name: "struct of struct of string fields test",
+			iterator: func() iterator.ValueIterator {
+				dt := arrow.StructOf([]arrow.Field{
+					{Name: "field1", Type: arrow.StructOf([]arrow.Field{
+						{Name: "fielda", Type: arrow.BinaryTypes.String},
+						{Name: "fieldb", Type: arrow.BinaryTypes.String},
+					}...)},
+				}...)
+				sb := array.NewStructBuilder(mem, dt)
+				defer sb.Release()
+
+				sb2 := sb.FieldBuilder(0).(*array.StructBuilder)
+				fb0 := sb2.FieldBuilder(0).(*array.StringBuilder)
+				fb1 := sb2.FieldBuilder(1).(*array.StringBuilder)
+
+				// [{"field1":{"fielda":"foo","fieldb":"bar"}},null,{"field1":{"fielda":"ping","fieldb":"pong"}}]
+				sb.Append(true)
+				sb2.Append(true)
+				fb0.Append("foo")
+				fb1.Append("bar")
+
+				sb.Append(false)
+
+				sb.Append(true)
+				sb2.Append(true)
+				fb0.Append("ping")
+				fb1.Append("pong")
+
+				s1 := sb.NewStructArray()
+				defer s1.Release()
+
+				chunk := array.NewChunked(
+					dt,
+					[]array.Interface{s1},
+				)
+				defer chunk.Release()
+
+				field := arrow.Field{Name: "sofstr", Type: dt, Nullable: true}
+				col := array.NewColumn(field, chunk)
+				defer col.Release()
+
+				return iterator.NewValueIterator(col)
+			}(),
+			result: `{"field1":{"fielda":"foo","fieldb":"bar"}}`,
+			err:    nil,
+		},
+		{
+			name: "list of struct of string test",
+			iterator: func() iterator.ValueIterator {
+				dt := arrow.StructOf([]arrow.Field{
+					{Name: "field1", Type: arrow.BinaryTypes.String},
+					{Name: "field2", Type: arrow.BinaryTypes.String},
+				}...)
+				lb := array.NewListBuilder(mem, dt)
+				defer lb.Release()
+
+				sb := lb.ValueBuilder().(*array.StructBuilder)
+				fb0 := sb.FieldBuilder(0).(*array.StringBuilder)
+				fb1 := sb.FieldBuilder(1).(*array.StringBuilder)
+
+				// [[{"field1":"foo","field2":"bar"},null,{"field1":"ping","field2":"pong"}],null,[{"field1":"beep","field2":"boop"}]]
+				lb.Append(true)
+				sb.Append(true)
+				fb0.Append("foo")
+				fb1.Append("bar")
+				sb.Append(false)
+				sb.Append(true)
+				fb0.Append("ping")
+				fb1.Append("pong")
+
+				lb.Append(false)
+
+				lb.Append(true)
+				sb.Append(true)
+				fb0.Append("beep")
+				fb1.Append("boop")
+
+				i1 := lb.NewListArray()
+				defer i1.Release()
+
+				chunk := array.NewChunked(
+					arrow.ListOf(dt),
+					[]array.Interface{i1},
+				)
+				defer chunk.Release()
+
+				field := arrow.Field{Name: "los", Type: arrow.ListOf(dt), Nullable: true}
+				col := array.NewColumn(field, chunk)
+				defer col.Release()
+
+				return iterator.NewValueIterator(col)
+			}(),
+			result: `[{"field1":"foo","field2":"bar"},null,{"field1":"ping","field2":"pong"}]`,
+			err:    nil,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			defer tc.iterator.Release()

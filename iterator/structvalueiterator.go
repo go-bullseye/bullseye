@@ -58,12 +58,7 @@ func (vr *StructValueIterator) ValueInterface() interface{} {
 		return nil
 	}
 
-	obj := make(map[string]interface{})
-	for i, fieldIterator := range vr.fieldIterators {
-		obj[vr.fieldNames[i]] = fieldIterator.ValueInterface()
-	}
-
-	return obj
+	return vr.fieldIterators
 }
 
 // ValueAsJSON returns the current value as an interface{} in it's JSON representation.
@@ -71,8 +66,17 @@ func (vr *StructValueIterator) ValueAsJSON() (interface{}, error) {
 	if vr.ref.IsNull(vr.index) {
 		return nil, nil
 	}
-	panic("StructValueIterator ValueAsJSON not yet implemented")
-	return structAsJSON(vr.ValueInterface())
+
+	obj := make(map[string]interface{})
+	for i, fieldIterator := range vr.fieldIterators {
+		jsonValue, err := fieldIterator.ValueAsJSON()
+		if err != nil {
+			return nil, err
+		}
+		obj[vr.fieldNames[i]] = jsonValue
+	}
+
+	return obj, nil
 }
 
 func (vr *StructValueIterator) DataType() arrow.DataType {
@@ -80,7 +84,7 @@ func (vr *StructValueIterator) DataType() arrow.DataType {
 }
 
 func (vr *StructValueIterator) Next() bool {
-	fmt.Println("called StructValueIterator Next")
+	// fmt.Println("called StructValueIterator Next")
 	if vr.done {
 		return false
 	}
