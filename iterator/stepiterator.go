@@ -10,9 +10,10 @@ import (
 
 // StepValue holds the value for a given step.
 type StepValue struct {
-	Values []interface{}
-	Exists []bool
-	Dtypes []arrow.DataType
+	Values     []interface{}
+	ValuesJSON []interface{}
+	Exists     []bool
+	Dtypes     []arrow.DataType
 }
 
 // Value returns the value at index i and the data type for that value.
@@ -23,6 +24,7 @@ func (sv StepValue) Value(i int) (interface{}, arrow.DataType) {
 // StepIterator iterates over multiple iterators in step.
 type StepIterator interface {
 	Values() *StepValue
+	ValuesJSON() (*StepValue, error)
 	Next() bool
 	Retain()
 	Release()
@@ -70,14 +72,44 @@ func NewStepIterator(dtypes []arrow.DataType, iterators ...ValueIterator) StepIt
 
 // Values returns the values in the current step as a StepValue.
 func (s *stepIterator) Values() *StepValue {
+	if s.stepValue.Values == nil {
+		s.stepValue.Values = make([]interface{}, len(s.iterators))
+		for i, iterator := range s.iterators {
+			if s.stepValue.Exists[i] {
+				s.stepValue.Values[i] = iterator.ValueInterface()
+			} else {
+				s.stepValue.Values[i] = nil
+			}
+		}
+	}
+
 	return s.stepValue
+}
+
+// ValuesJSON returns the json values in the current step as a StepValue.
+func (s *stepIterator) ValuesJSON() (*StepValue, error) {
+	var err error
+	if s.stepValue.ValuesJSON == nil {
+		s.stepValue.ValuesJSON = make([]interface{}, len(s.iterators))
+		for i, iterator := range s.iterators {
+			if s.stepValue.Exists[i] {
+				s.stepValue.ValuesJSON[i], err = iterator.ValueAsJSON()
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				s.stepValue.ValuesJSON[i] = nil
+			}
+		}
+	}
+	return s.stepValue, nil
 }
 
 // Next returns false when there are no more rows in any iterator.
 func (s *stepIterator) Next() bool {
 	// build the step values
 	step := &StepValue{
-		Values: make([]interface{}, len(s.iterators)),
+		Values: nil,
 		Exists: make([]bool, len(s.iterators)),
 		Dtypes: s.dtypes,
 	}
@@ -87,12 +119,6 @@ func (s *stepIterator) Next() bool {
 		exists := iterator.Next()
 		next = exists || next
 		step.Exists[i] = exists
-
-		if exists {
-			step.Values[i] = iterator.ValueInterface()
-		} else {
-			step.Values[i] = nil
-		}
 	}
 
 	s.stepValue = step

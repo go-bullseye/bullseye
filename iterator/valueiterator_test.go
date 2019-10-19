@@ -2,11 +2,13 @@ package iterator_test
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/float16"
+	"github.com/apache/arrow/go/arrow/ipc"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/go-bullseye/bullseye/iterator"
 )
@@ -597,4 +599,129 @@ func f16sFrom(vs []float32) []float16.Num {
 		o[i] = float16.New(v)
 	}
 	return o
+}
+
+// Used to verify we were building the arrow structures correctly.
+func getColumnFromFile(t *testing.T, mem memory.Allocator) iterator.ValueIterator {
+	t.Helper()
+	// Try reading in the los.arrow file
+	f, err := os.Open("/Users/nick/projects/bullseye/tmp/los.arrow")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := ipc.NewFileReader(f, ipc.WithAllocator(mem))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	recs := make([]array.Record, r.NumRecords())
+	for i := 0; i < r.NumRecords(); i++ {
+		rec, err := r.Record(i)
+		if err != nil {
+			t.Fatalf("could not read record %d: %v", i, err)
+		}
+		recs[0] = rec
+	}
+
+	tbl := array.NewTableFromRecords(recs[0].Schema(), recs)
+	defer tbl.Release()
+
+	col := tbl.Column(0)
+
+	return iterator.NewValueIterator(col)
+}
+
+func TestSliceArray(t *testing.T) {
+	mem := memory.NewCheckedAllocator(memory.NewGoAllocator())
+	defer mem.AssertSize(t, 0)
+
+	for _, tc := range []struct {
+		name  string
+		want  string
+		arr   array.Interface
+		check func(arr array.Interface) string
+	}{
+		{
+			name: "SliceArray int32",
+			want: "[1 2 3]",
+			arr: func() array.Interface {
+				ib := array.NewInt32Builder(mem)
+				defer ib.Release()
+
+				ib.AppendValues([]int32{1, 2, 3, 4}, nil)
+				i1 := ib.NewInt32Array()
+				return i1
+			}(),
+			check: func(arr array.Interface) string {
+				t.Helper()
+				vals := arr.(*array.Int32)
+				return vals.String()
+			},
+		},
+		{
+			name: "SliceArray struct",
+			want: "{[1 (null) 3] [2 (null) 4] [1 (null) 3] [2 (null) 4]}",
+			arr: func() array.Interface {
+				fields := []arrow.Field{
+					{Name: "field1", Type: arrow.PrimitiveTypes.Int32},
+					{Name: "field2", Type: arrow.PrimitiveTypes.Int32},
+					{Name: "field3", Type: arrow.PrimitiveTypes.Int32},
+					{Name: "field4", Type: arrow.PrimitiveTypes.Int32},
+				}
+				sb := array.NewStructBuilder(mem, arrow.StructOf(fields...))
+				defer sb.Release()
+				fb0 := sb.FieldBuilder(0).(*array.Int32Builder)
+				fb1 := sb.FieldBuilder(1).(*array.Int32Builder)
+				fb2 := sb.FieldBuilder(2).(*array.Int32Builder)
+				fb3 := sb.FieldBuilder(3).(*array.Int32Builder)
+
+				sb.Append(true)
+				fb0.Append(1)
+				fb1.Append(2)
+				fb2.Append(1)
+				fb3.Append(2)
+
+				sb.Append(false)
+
+				sb.Append(true)
+				fb0.Append(3)
+				fb1.Append(4)
+				fb2.Append(3)
+				fb3.Append(4)
+
+				sb.Append(true)
+				fb0.Append(5)
+				fb1.Append(6)
+				fb2.Append(5)
+				fb3.Append(6)
+
+				sb.Append(true)
+				fb0.Append(7)
+				fb1.Append(8)
+				fb2.Append(7)
+				fb3.Append(8)
+
+				s1 := sb.NewStructArray()
+				return s1
+			}(),
+			check: func(arr array.Interface) string {
+				t.Helper()
+				vals := arr.(*array.Struct)
+				return vals.String()
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			defer tc.arr.Release()
+			beg := 0
+			end := 3
+			arr := array.NewSlice(tc.arr, int64(beg), int64(end))
+			defer arr.Release()
+			got := tc.check(arr)
+			if got != tc.want {
+				t.Errorf("\ngot=%#v\nwant=%#v", got, tc.want)
+			}
+		})
+	}
 }

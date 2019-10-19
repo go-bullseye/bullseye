@@ -74,6 +74,7 @@ func (vr *ListValueIterator) ValueAsJSON() (interface{}, error) {
 	end := offsets[j+1]
 	arr := array.NewSlice(vr.ref.ListValues(), int64(beg), int64(end))
 	defer arr.Release()
+	fmt.Printf("slice of list: %#v\n", arr)
 	iter := NewInterfaceValueIterator(
 		arrow.Field{Name: "item", Type: vr.elemDataType, Nullable: true},
 		arr,
@@ -83,6 +84,7 @@ func (vr *ListValueIterator) ValueAsJSON() (interface{}, error) {
 	list := make([]interface{}, 0, end-beg)
 	for iter.Next() {
 		jsonValue, err := iter.ValueAsJSON()
+		fmt.Printf("jsonValue: %#v\n", jsonValue)
 		if err != nil {
 			return nil, err
 		}

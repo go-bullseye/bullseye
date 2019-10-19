@@ -8,6 +8,9 @@ import (
 // Special conversions for asjson are implemented here
 
 func int64AsJSON(v interface{}) (interface{}, error) {
+	// JSON doesn't support 64 bit integers.
+	// https://issues.apache.org/jira/browse/ARROW-6517?filter=12346179
+	// strconv.FormatInt(v.(int64), 10)
 	return v, nil
 }
 

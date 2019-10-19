@@ -23,6 +23,11 @@ type Signed128BitInteger struct {
 // ToJSON writes the DataFrame as JSON.
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
+	fields := schema.Fields()
+	names := make([]string, len(fields))
+	for i, field := range fields {
+		names[i] = field.Name
+	}
 
 	// Iterate over the rows
 
@@ -33,11 +38,21 @@ func (df *DataFrame) ToJSON(w io.Writer) error {
 	enc := json.NewEncoder(w)
 
 	for it.Next() {
-		stepValue := it.Values()
-		jsonObj, err := rowToJSON(schema, stepValue)
+		stepValue, err := it.ValuesJSON()
 		if err != nil {
 			return err
 		}
+		// At this point everything in stepValue is json.
+		// We just have to build the object from it.
+		jsonObj := make(map[string]interface{})
+		for i, jsonValue := range stepValue.ValuesJSON {
+			jsonObj[names[i]] = jsonValue
+		}
+
+		// jsonObj, err := rowToJSON(schema, stepValue)
+		// if err != nil {
+		// 	return err
+		// }
 		err = enc.Encode(jsonObj)
 		if err != nil {
 			return err

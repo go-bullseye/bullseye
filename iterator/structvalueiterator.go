@@ -67,6 +67,11 @@ func (vr *StructValueIterator) ValueAsJSON() (interface{}, error) {
 		return nil, nil
 	}
 
+	// TODO: Need to take into consideration the bounds of the struct
+	// It's possible this struct is holding values from other arrays.
+	// Need to figure out how to take a slice of the struct type
+	// j := vr.index + vr.ref.Offset()
+
 	obj := make(map[string]interface{})
 	for i, fieldIterator := range vr.fieldIterators {
 		jsonValue, err := fieldIterator.ValueAsJSON()
