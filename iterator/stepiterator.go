@@ -72,7 +72,7 @@ func NewStepIterator(dtypes []arrow.DataType, iterators ...ValueIterator) StepIt
 
 // Values returns the values in the current step as a StepValue.
 func (s *stepIterator) Values() *StepValue {
-	if s.stepValue.Values == nil {
+	if s.stepValue.Values != nil {
 		return s.stepValue
 	}
 
