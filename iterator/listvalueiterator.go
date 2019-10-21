@@ -29,9 +29,7 @@ type ListValueIterator struct {
 func NewListValueIterator(col *array.Column) *ListValueIterator {
 	// We need a ChunkIterator to read the chunks
 	chunkIterator := NewChunkIterator(col)
-
 	elemDataType := col.DataType().(*arrow.ListType).Elem()
-
 	return &ListValueIterator{
 		refCount:      1,
 		chunkIterator: chunkIterator,
@@ -49,7 +47,6 @@ func (vr *ListValueIterator) ValueInterface() interface{} {
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
-	// elDt := vr.ref.DataType().(*arrow.ListType).Elem()
 	j := vr.index + vr.ref.Offset() // index + data offset
 	offsets := vr.ref.Offsets()
 	beg := int64(offsets[j])
@@ -97,7 +94,6 @@ func (vr *ListValueIterator) DataType() arrow.DataType {
 }
 
 func (vr *ListValueIterator) Next() bool {
-	// fmt.Println("called ListValueIterator Next")
 	if vr.done {
 		return false
 	}

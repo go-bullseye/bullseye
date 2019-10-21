@@ -2,7 +2,6 @@
 package iterator
 
 import (
-	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
@@ -53,7 +52,6 @@ func NewStructValueIterator(col *array.Column) *StructValueIterator {
 
 // For this we return []ValueIterators so the user can do what they want with them.
 func (vr *StructValueIterator) ValueInterface() interface{} {
-	fmt.Printf("called StructValueIterator ValueInterface. index = %d | len = %d\n", vr.index, vr.ref.Len())
 	if vr.ref.IsNull(vr.index) {
 		return nil
 	}
@@ -66,11 +64,6 @@ func (vr *StructValueIterator) ValueAsJSON() (interface{}, error) {
 	if vr.ref.IsNull(vr.index) {
 		return nil, nil
 	}
-
-	// TODO: Need to take into consideration the bounds of the struct
-	// It's possible this struct is holding values from other arrays.
-	// Need to figure out how to take a slice of the struct type
-	// j := vr.index + vr.ref.Offset()
 
 	obj := make(map[string]interface{})
 	for i, fieldIterator := range vr.fieldIterators {
@@ -89,7 +82,6 @@ func (vr *StructValueIterator) DataType() arrow.DataType {
 }
 
 func (vr *StructValueIterator) Next() bool {
-	// fmt.Println("called StructValueIterator Next")
 	if vr.done {
 		return false
 	}
@@ -141,9 +133,6 @@ func (vr *StructValueIterator) nextChunk() bool {
 	vr.ref = ref.(*array.Struct)
 	vr.index = -1
 
-	// dtype := vr.ref.DataType().(*arrow.StructType)
-
-	// I think this is the problem...
 	// Create the field iterators
 	vr.fieldIterators = make([]ValueIterator, vr.ref.NumField())
 	for i := range vr.fieldIterators {

@@ -233,8 +233,7 @@ func initFieldAppender(field *arrow.Field) AppenderFunc {
 	}
 }
 
-// TODO: Write test that will test all the data types.
-// TODO: Can values in the nested structure ever be nil?
+// TODO(nickpoorman): Write test that will test all the data types.
 func appendValue(bldr array.Builder, v interface{}) {
 	fmt.Printf("appendValue: [%v]\n", v)
 	switch b := bldr.(type) {
@@ -293,19 +292,17 @@ func appendValue(bldr array.Builder, v interface{}) {
 	}
 }
 
+// If the type of v is a pointer return the pointer as a value,
+// otherwise create a new pointer to the value.
 func reflectValueOfNonPointer(v interface{}) reflect.Value {
 	var ptr reflect.Value
 	value := reflect.ValueOf(v)
 	if value.Type().Kind() == reflect.Ptr {
 		ptr = value
-		// value = ptr.Elem() // acquire value referenced by pointer
 	} else {
 		ptr = reflect.New(reflect.TypeOf(v)) // create new pointer
 		temp := ptr.Elem()                   // create variable to value of pointer
 		temp.Set(value)                      // set value of variable to our passed in value
 	}
-
-	fmt.Printf("[%v] has type of: %s\n", v, reflect.TypeOf(v).String())
-
 	return ptr
 }

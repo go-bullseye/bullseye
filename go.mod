@@ -7,4 +7,4 @@ require (
 	github.com/pkg/errors v0.8.1
 )
 
-replace github.com/apache/arrow/go/arrow => ../arrow/go/arrow
+replace github.com/apache/arrow/go/arrow => github.com/nickpoorman/arrow/go/arrow v0.0.0-20191021222113-6d58452fddba
