@@ -13,6 +13,9 @@ type Signed128BitInteger struct {
 }
 
 // ToJSON writes the DataFrame as JSON.
+// This will write newline delimited JSON with each line as a single record.
+// This is equivaliant to Pandas to_json when you specify:
+// orient='records' and lines=True.
 func (df *DataFrame) ToJSON(w io.Writer) error {
 	schema := df.Schema()
 	fields := schema.Fields()
