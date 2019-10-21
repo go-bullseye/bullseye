@@ -73,13 +73,15 @@ func NewStepIterator(dtypes []arrow.DataType, iterators ...ValueIterator) StepIt
 // Values returns the values in the current step as a StepValue.
 func (s *stepIterator) Values() *StepValue {
 	if s.stepValue.Values == nil {
-		s.stepValue.Values = make([]interface{}, len(s.iterators))
-		for i, iterator := range s.iterators {
-			if s.stepValue.Exists[i] {
-				s.stepValue.Values[i] = iterator.ValueInterface()
-			} else {
-				s.stepValue.Values[i] = nil
-			}
+		return s.stepValue
+	}
+
+	s.stepValue.Values = make([]interface{}, len(s.iterators))
+	for i, iterator := range s.iterators {
+		if s.stepValue.Exists[i] {
+			s.stepValue.Values[i] = iterator.ValueInterface()
+		} else {
+			s.stepValue.Values[i] = nil
 		}
 	}
 
@@ -88,18 +90,20 @@ func (s *stepIterator) Values() *StepValue {
 
 // ValuesJSON returns the json values in the current step as a StepValue.
 func (s *stepIterator) ValuesJSON() (*StepValue, error) {
+	if s.stepValue.ValuesJSON != nil {
+		return s.stepValue, nil
+	}
+
 	var err error
-	if s.stepValue.ValuesJSON == nil {
-		s.stepValue.ValuesJSON = make([]interface{}, len(s.iterators))
-		for i, iterator := range s.iterators {
-			if s.stepValue.Exists[i] {
-				s.stepValue.ValuesJSON[i], err = iterator.ValueAsJSON()
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				s.stepValue.ValuesJSON[i] = nil
+	s.stepValue.ValuesJSON = make([]interface{}, len(s.iterators))
+	for i, iterator := range s.iterators {
+		if s.stepValue.Exists[i] {
+			s.stepValue.ValuesJSON[i], err = iterator.ValueAsJSON()
+			if err != nil {
+				return nil, err
 			}
+		} else {
+			s.stepValue.ValuesJSON[i] = nil
 		}
 	}
 	return s.stepValue, nil
