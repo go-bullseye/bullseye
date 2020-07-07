@@ -1,5 +1,19 @@
 # bullseye
 
+# NOTICE: THIS PROJECT IS DEPRECATED
+
+**This project has been merged into [gomem](https://github.com/gomem/gomem). bullseye is now under the "dataframe" package in the [gomem](https://github.com/gomem/gomem) project.**
+
+.  
+.  
+.  
+.  
+.  
+.  
+.  
+.  
+.  
+
 [![GoDoc](https://godoc.org/github.com/go-bullseye/bullseye?status.svg)](https://godoc.org/github.com/go-bullseye/bullseye)
 [![CircleCI](https://circleci.com/gh/go-bullseye/bullseye.svg?style=svg)](https://circleci.com/gh/go-bullseye/bullseye)
 
